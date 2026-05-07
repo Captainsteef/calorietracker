@@ -1188,11 +1188,33 @@ function handlePhoto(e) {
 
   const reader = new FileReader();
   reader.onload = ev => {
-    const src = ev.target.result;
-    document.getElementById('preview-img').src = src;
-    document.getElementById('preview-img').style.display = 'block';
-    // store base64 data only (strip prefix for API)
-    photoBase64 = src.split(',')[1];
+    const img = new Image();
+    img.onload = () => {
+      // resize to max 1024px on longest side
+      const MAX = 1024;
+      let { width, height } = img;
+      if (width > height && width > MAX) {
+        height = Math.round(height * MAX / width);
+        width = MAX;
+      } else if (height > width && height > MAX) {
+        width = Math.round(width * MAX / height);
+        height = MAX;
+      } else if (width > MAX) {
+        width = height = MAX;
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+
+      // encode as JPEG at 0.7 quality
+      const compressed = canvas.toDataURL('image/jpeg', 0.7);
+      document.getElementById('preview-img').src = compressed;
+      document.getElementById('preview-img').style.display = 'block';
+      photoBase64 = compressed.split(',')[1];
+    };
+    img.src = ev.target.result;
   };
   reader.readAsDataURL(file);
 }
