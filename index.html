@@ -970,6 +970,18 @@ function getApiKey() {
   return localStorage.getItem('anthropic_key') || '';
 }
 
+// ── api ────────────────────────────────────────────────────────────────────
+// all claude requests go through the netlify proxy to avoid safari cors issues
+async function callClaude(payload) {
+  const apiKey = getApiKey();
+  const res = await fetch('/api/claude', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ apiKey, ...payload })
+  });
+  return res.json();
+}
+
 // ── date navigation ────────────────────────────────────────────────────────
 function changeDay(delta) {
   const d = new Date(currentDate);
@@ -1223,24 +1235,12 @@ All numeric values are plain numbers. Description is max 40 chars.`;
   userContent.push({ type: 'text', text: prompt });
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 300,
-        messages: [{ role: 'user', content: userContent }]
-      })
+    const data = await callClaude({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 300,
+      messages: [{ role: 'user', content: userContent }]
     });
 
-    const data = await res.json();
-
-    // show full raw response for debugging
     console.log('API response:', JSON.stringify(data));
 
     if (!data.content || !data.content[0]) {
@@ -1268,7 +1268,6 @@ All numeric values are plain numbers. Description is max 40 chars.`;
 function reanalyze() {
   pendingMacros = null;
   document.getElementById('result-preview').classList.remove('show');
-
   document.getElementById('analyze-btn').disabled = false;
 }
 
@@ -1436,23 +1435,13 @@ ${buildDataContext()}
 Answer based on their actual data. Be direct and specific. Keep responses short.`;
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 500,
-        system: systemPrompt,
-        messages: chatHistory
-      })
+    const data = await callClaude({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 500,
+      system: systemPrompt,
+      messages: chatHistory
     });
 
-    const data = await res.json();
     const reply = data.content[0].text;
 
     typingEl.remove();
