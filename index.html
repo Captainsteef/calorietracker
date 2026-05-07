@@ -8,32 +8,33 @@
 <meta name="apple-mobile-web-app-title" content="FattyTracker">
 <title>FattyTracker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Inconsolata:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0a0a0a;
-    --surface: #111111;
-    --surface2: #181818;
-    --border: #222222;
-    --accent: #c8f060;
-    --accent-dim: #a0c040;
-    --text: #f0f0f0;
-    --text-muted: #666;
-    --text-mid: #999;
-    --danger: #ff4444;
-    --warn: #ffaa00;
-    --protein: #60c0ff;
-    --carbs: #ffcc44;
-    --fat: #ff8844;
-    --radius: 14px;
-    --safe-top: env(safe-area-inset-top, 0px);
+    --bg:          #1c1814;
+    --surface:     #221e19;
+    --surface2:    #2a2420;
+    --border:      #2e2620;
+    --border2:     #3e3428;
+    --accent:      #c8956c;
+    --accent-dim:  #a87450;
+    --text:        #e8dcc8;
+    --text-muted:  #6b5c40;
+    --text-mid:    #9a8a6a;
+    --danger:      #c85a4a;
+    --warn:        #c8956c;
+    --protein:     #8ab4c8;
+    --carbs:       #b4a870;
+    --fat:         #c8956c;
+    --radius:      4px;
+    --safe-top:    env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
   body {
-    font-family: 'DM Mono', monospace;
+    font-family: 'Inconsolata', monospace;
     background: var(--bg);
     color: var(--text);
     min-height: 100dvh;
@@ -45,7 +46,7 @@
   #app { display: flex; flex-direction: column; min-height: 100dvh; }
 
   header {
-    padding: calc(var(--safe-top) + 16px) 20px 16px;
+    padding: calc(var(--safe-top) + 18px) 22px 16px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -57,88 +58,96 @@
   }
 
   .logo {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
     font-size: 20px;
-    letter-spacing: -0.5px;
+    letter-spacing: 0.5px;
     color: var(--accent);
+    font-style: italic;
   }
 
   .date-nav {
     display: flex;
     align-items: center;
     gap: 10px;
-    font-size: 12px;
-    color: var(--text-mid);
+    font-size: 11px;
+    color: var(--text-muted);
   }
 
   .date-nav button {
     background: none;
-    border: 1px solid var(--border);
-    color: var(--text-mid);
+    border: 1px solid var(--border2);
+    color: var(--text-muted);
     width: 28px; height: 28px;
-    border-radius: 8px;
+    border-radius: var(--radius);
     cursor: pointer;
     font-size: 14px;
     display: flex; align-items: center; justify-content: center;
     transition: all 0.15s;
+    font-family: 'Inconsolata', monospace;
   }
   .date-nav button:hover { border-color: var(--accent); color: var(--accent); }
 
-  #current-date { font-family: 'Syne', sans-serif; font-weight: 600; font-size: 13px; color: var(--text); }
+  #current-date {
+    font-family: 'Playfair Display', serif;
+    font-size: 13px;
+    color: var(--text);
+    font-style: italic;
+  }
 
-  main { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+  main { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
 
   /* ── tabs ── */
   .tabs {
     display: flex;
-    gap: 4px;
+    gap: 0;
     background: var(--surface);
     border-radius: var(--radius);
-    padding: 4px;
     border: 1px solid var(--border);
+    overflow: hidden;
   }
 
   .tab {
     flex: 1;
-    padding: 9px 4px;
+    padding: 10px 4px;
     background: none;
     border: none;
+    border-right: 1px solid var(--border);
     color: var(--text-muted);
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
+    font-family: 'Inconsolata', monospace;
+    font-size: 10px;
     cursor: pointer;
-    border-radius: 10px;
     transition: all 0.2s;
-    letter-spacing: 0.5px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
   }
-  .tab.active { background: var(--accent); color: #000; font-weight: 500; }
+  .tab:last-child { border-right: none; }
+  .tab.active { background: var(--surface2); color: var(--accent); }
 
   /* ── cards ── */
   .card {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 16px;
+    padding: 18px;
   }
 
   .card-label {
-    font-size: 10px;
-    letter-spacing: 1.5px;
+    font-size: 9px;
+    letter-spacing: 3px;
     color: var(--text-muted);
     text-transform: uppercase;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
   }
 
   /* ── calorie ring ── */
   .calorie-summary {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 22px;
   }
 
   .ring-wrap { position: relative; width: 110px; height: 110px; flex-shrink: 0; }
-
   .ring-wrap svg { transform: rotate(-90deg); }
 
   .ring-center {
@@ -152,50 +161,52 @@
   }
 
   .ring-kcal {
-    font-family: 'Syne', sans-serif;
-    font-size: 22px;
-    font-weight: 700;
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 400;
     line-height: 1;
     color: var(--accent);
   }
 
-  .ring-label { font-size: 9px; color: var(--text-muted); letter-spacing: 1px; margin-top: 3px; }
+  .ring-label { font-size: 8px; color: var(--text-muted); letter-spacing: 2px; margin-top: 4px; text-transform: uppercase; }
 
-  .macro-grid { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+  .macro-grid { flex: 1; display: flex; flex-direction: column; gap: 9px; }
 
-  .macro-row { display: flex; flex-direction: column; gap: 4px; }
+  .macro-row { display: flex; flex-direction: column; gap: 5px; }
 
   .macro-info { display: flex; justify-content: space-between; font-size: 11px; }
 
-  .macro-name { color: var(--text-muted); }
+  .macro-name { color: var(--text-muted); letter-spacing: 1px; }
 
-  .macro-val { color: var(--text); }
+  .macro-val { color: var(--text); font-weight: 500; }
 
-  .bar-bg { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .bar-bg { height: 1px; background: var(--border2); border-radius: 1px; overflow: hidden; }
 
-  .bar-fill { height: 100%; border-radius: 2px; transition: width 0.5s cubic-bezier(0.4,0,0.2,1); }
+  .bar-fill { height: 100%; border-radius: 1px; transition: width 0.6s cubic-bezier(0.4,0,0.2,1); }
 
   /* ── log button ── */
   .log-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 10px;
     width: 100%;
-    padding: 16px;
-    background: var(--accent);
-    color: #000;
-    border: none;
+    padding: 15px;
+    background: none;
+    color: var(--accent);
+    border: 1px solid var(--accent-dim);
     border-radius: var(--radius);
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 15px;
+    font-family: 'Inconsolata', monospace;
+    font-weight: 400;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
     cursor: pointer;
-    letter-spacing: 0.3px;
-    transition: all 0.15s;
+    transition: all 0.2s;
     -webkit-appearance: none;
   }
-  .log-btn:active { transform: scale(0.98); background: var(--accent-dim); }
+  .log-btn:hover { background: var(--surface2); }
+  .log-btn:active { transform: scale(0.99); opacity: 0.85; }
 
   /* ── meal list ── */
   .meal-item {
@@ -210,58 +221,63 @@
   .meal-item:first-child { padding-top: 0; }
 
   .meal-thumb {
-    width: 52px; height: 52px;
-    border-radius: 10px;
+    width: 48px; height: 48px;
+    border-radius: var(--radius);
     object-fit: cover;
     flex-shrink: 0;
     background: var(--surface2);
+    filter: sepia(20%) brightness(0.9);
   }
 
   .meal-thumb-placeholder {
-    width: 52px; height: 52px;
-    border-radius: 10px;
+    width: 48px; height: 48px;
+    border-radius: var(--radius);
     background: var(--surface2);
-    border: 1px solid var(--border);
+    border: 1px solid var(--border2);
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
+    font-size: 18px;
   }
 
   .meal-info { flex: 1; min-width: 0; }
 
   .meal-desc {
+    font-family: 'Playfair Display', serif;
     font-size: 13px;
     color: var(--text);
     margin-bottom: 5px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    font-style: italic;
   }
 
-  .meal-macros { display: flex; gap: 8px; flex-wrap: wrap; }
+  .meal-macros { display: flex; gap: 6px; flex-wrap: wrap; }
 
   .macro-chip {
-    font-size: 10px;
+    font-size: 9px;
     padding: 2px 7px;
-    border-radius: 20px;
+    border-radius: 2px;
     background: var(--surface2);
-    border: 1px solid var(--border);
+    border: 1px solid var(--border2);
     color: var(--text-mid);
+    letter-spacing: 0.5px;
   }
 
-  .meal-time { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
+  .meal-time { font-size: 10px; color: var(--text-muted); margin-top: 5px; letter-spacing: 1px; }
 
   .meal-delete {
     background: none;
     border: none;
     color: var(--text-muted);
     cursor: pointer;
-    font-size: 16px;
+    font-size: 15px;
     padding: 4px;
     transition: color 0.15s;
     flex-shrink: 0;
+    font-family: 'Inconsolata', monospace;
   }
   .meal-delete:hover { color: var(--danger); }
 
@@ -269,7 +285,7 @@
   .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.85);
+    background: rgba(10,8,6,0.9);
     z-index: 200;
     display: flex;
     flex-direction: column;
@@ -283,9 +299,9 @@
 
   .modal {
     background: var(--surface);
-    border-radius: 20px 20px 0 0;
-    border-top: 1px solid var(--border);
-    padding: 20px;
+    border-radius: 6px 6px 0 0;
+    border-top: 1px solid var(--border2);
+    padding: 22px;
     transform: translateY(40px);
     transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
     max-height: 90dvh;
@@ -294,22 +310,24 @@
   .modal-overlay.open .modal { transform: translateY(0); }
 
   .modal-handle {
-    width: 36px; height: 4px;
-    background: var(--border);
+    width: 32px; height: 3px;
+    background: var(--border2);
     border-radius: 2px;
-    margin: 0 auto 20px;
+    margin: 0 auto 22px;
   }
 
   .modal-title {
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 18px;
+    font-family: 'Playfair Display', serif;
+    font-weight: 500;
+    font-size: 20px;
     margin-bottom: 20px;
+    font-style: italic;
+    color: var(--text);
   }
 
   /* ── photo upload ── */
   .photo-upload-area {
-    border: 2px dashed var(--border);
+    border: 1px dashed var(--border2);
     border-radius: var(--radius);
     padding: 28px;
     text-align: center;
@@ -318,11 +336,11 @@
     margin-bottom: 16px;
     position: relative;
   }
-  .photo-upload-area:hover { border-color: var(--accent); }
+  .photo-upload-area:hover { border-color: var(--accent-dim); }
   .photo-upload-area input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
 
-  .upload-icon { font-size: 32px; margin-bottom: 8px; }
-  .upload-text { font-size: 12px; color: var(--text-muted); }
+  .upload-icon { font-size: 28px; margin-bottom: 8px; opacity: 0.6; }
+  .upload-text { font-size: 11px; color: var(--text-muted); letter-spacing: 1px; }
 
   #preview-img {
     width: 100%;
@@ -331,6 +349,7 @@
     object-fit: cover;
     margin-bottom: 16px;
     display: none;
+    filter: sepia(15%) brightness(0.92);
   }
 
   /* ── inputs ── */
@@ -338,59 +357,64 @@
 
   .field label {
     display: block;
-    font-size: 10px;
-    letter-spacing: 1.2px;
+    font-size: 9px;
+    letter-spacing: 2px;
     color: var(--text-muted);
     text-transform: uppercase;
-    margin-bottom: 6px;
+    margin-bottom: 7px;
   }
 
   .field input, .field textarea, .field select {
     width: 100%;
     background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
     color: var(--text);
-    font-family: 'DM Mono', monospace;
+    font-family: 'Inconsolata', monospace;
     font-size: 14px;
-    padding: 12px 14px;
+    padding: 11px 14px;
     outline: none;
     transition: border-color 0.15s;
     -webkit-appearance: none;
   }
-  .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--accent); }
+  .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--accent-dim); }
   .field textarea { resize: none; min-height: 70px; }
+  .field select option { background: var(--surface2); }
 
   .btn-row { display: flex; gap: 10px; }
 
   .btn-secondary {
     flex: 1;
-    padding: 14px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    color: var(--text);
+    padding: 13px;
+    background: none;
+    border: 1px solid var(--border2);
+    color: var(--text-mid);
     border-radius: var(--radius);
-    font-family: 'DM Mono', monospace;
-    font-size: 14px;
+    font-family: 'Inconsolata', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
     cursor: pointer;
     transition: all 0.15s;
   }
+  .btn-secondary:hover { border-color: var(--text-muted); color: var(--text); }
 
   .btn-primary {
     flex: 2;
-    padding: 14px;
-    background: var(--accent);
-    border: none;
-    color: #000;
+    padding: 13px;
+    background: none;
+    border: 1px solid var(--accent-dim);
+    color: var(--accent);
     border-radius: var(--radius);
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 14px;
+    font-family: 'Inconsolata', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
     cursor: pointer;
     transition: all 0.15s;
     -webkit-appearance: none;
   }
-  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-primary:hover { background: var(--surface2); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
   .btn-primary:active:not(:disabled) { transform: scale(0.98); }
 
   /* ── loading ── */
@@ -398,21 +422,22 @@
     display: none;
     align-items: center;
     gap: 10px;
-    padding: 14px;
+    padding: 13px;
     background: var(--surface2);
     border-radius: var(--radius);
     margin-bottom: 14px;
-    font-size: 12px;
+    font-size: 11px;
     color: var(--text-mid);
+    letter-spacing: 1px;
   }
   .analyzing.show { display: flex; }
 
   .spinner {
-    width: 16px; height: 16px;
-    border: 2px solid var(--border);
+    width: 14px; height: 14px;
+    border: 1px solid var(--border2);
     border-top-color: var(--accent);
     border-radius: 50%;
-    animation: spin 0.7s linear infinite;
+    animation: spin 0.8s linear infinite;
     flex-shrink: 0;
   }
 
@@ -423,35 +448,42 @@
     align-items: center;
     padding: 10px 0;
     border-bottom: 1px solid var(--border);
-    font-size: 13px;
+    font-size: 12px;
   }
   .weight-log-row:last-child { border-bottom: none; }
-  .weight-date { color: var(--text-muted); font-size: 11px; }
-  .weight-val { font-family: 'Syne', sans-serif; font-weight: 600; color: var(--accent); }
+  .weight-date { color: var(--text-muted); font-size: 10px; letter-spacing: 1px; }
+  .weight-val { font-family: 'Playfair Display', serif; font-weight: 400; color: var(--accent); }
 
-  .metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .metric-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
 
   .metric-card {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 14px;
+    background: var(--surface);
+    padding: 16px;
     text-align: center;
   }
   .metric-num {
-    font-family: 'Syne', sans-serif;
-    font-size: 22px;
-    font-weight: 700;
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 400;
     color: var(--accent);
+    line-height: 1;
   }
-  .metric-unit { font-size: 11px; color: var(--text-muted); }
-  .metric-label { font-size: 10px; color: var(--text-muted); letter-spacing: 0.8px; text-transform: uppercase; margin-top: 4px; }
+  .metric-unit { font-size: 10px; color: var(--text-muted); margin-top: 2px; letter-spacing: 1px; }
+  .metric-label { font-size: 9px; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; margin-top: 6px; }
 
   /* ── chat tab ── */
   .chat-container {
     display: flex;
     flex-direction: column;
-    height: 60vh;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
@@ -470,25 +502,24 @@
   .chat-msg {
     max-width: 85%;
     padding: 10px 14px;
-    border-radius: 14px;
+    border-radius: var(--radius);
     font-size: 13px;
-    line-height: 1.5;
+    line-height: 1.6;
     animation: fadeIn 0.2s ease;
   }
 
   .chat-msg.user {
-    background: var(--accent);
-    color: #000;
+    background: var(--surface2);
+    border: 1px solid var(--accent-dim);
+    color: var(--text);
     align-self: flex-end;
-    border-bottom-right-radius: 4px;
   }
 
   .chat-msg.assistant {
     background: var(--surface2);
-    border: 1px solid var(--border);
-    color: var(--text);
+    border: 1px solid var(--border2);
+    color: var(--text-mid);
     align-self: flex-start;
-    border-bottom-left-radius: 4px;
   }
 
   .chat-msg.typing { color: var(--text-muted); font-style: italic; }
@@ -503,36 +534,41 @@
   .chat-input-row input {
     flex: 1;
     background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
     color: var(--text);
-    font-family: 'DM Mono', monospace;
+    font-family: 'Inconsolata', monospace;
     font-size: 13px;
-    padding: 10px 14px;
+    padding: 9px 13px;
     outline: none;
   }
-  .chat-input-row input:focus { border-color: var(--accent); }
+  .chat-input-row input:focus { border-color: var(--accent-dim); }
 
   .chat-send {
-    background: var(--accent);
-    border: none;
-    border-radius: 10px;
-    width: 40px;
+    background: none;
+    border: 1px solid var(--accent-dim);
+    color: var(--accent);
+    border-radius: var(--radius);
+    width: 38px;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 15px;
     flex-shrink: 0;
-    transition: opacity 0.15s;
+    transition: all 0.15s;
+    font-family: 'Inconsolata', monospace;
   }
-  .chat-send:disabled { opacity: 0.4; }
+  .chat-send:disabled { opacity: 0.35; }
+  .chat-send:hover:not(:disabled) { background: var(--surface2); }
 
   /* ── settings tab ── */
-  .settings-section { margin-bottom: 20px; }
+  .settings-section { margin-bottom: 22px; }
   .settings-title {
-    font-size: 10px;
-    letter-spacing: 1.5px;
+    font-size: 9px;
+    letter-spacing: 3px;
     color: var(--text-muted);
     text-transform: uppercase;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
   }
 
   .target-row {
@@ -545,8 +581,8 @@
   .week-bars {
     display: flex;
     align-items: flex-end;
-    gap: 6px;
-    height: 80px;
+    gap: 5px;
+    height: 72px;
     margin-top: 8px;
   }
 
@@ -555,78 +591,78 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    gap: 5px;
     height: 100%;
     justify-content: flex-end;
   }
 
   .week-bar {
     width: 100%;
-    border-radius: 4px 4px 0 0;
-    background: var(--accent);
-    opacity: 0.7;
-    min-height: 3px;
-    transition: height 0.4s cubic-bezier(0.4,0,0.2,1);
+    border-radius: 2px 2px 0 0;
+    background: var(--accent-dim);
+    opacity: 0.5;
+    min-height: 2px;
+    transition: height 0.5s cubic-bezier(0.4,0,0.2,1);
   }
-  .week-bar.today { opacity: 1; }
+  .week-bar.today { opacity: 1; background: var(--accent); }
 
-  .week-day { font-size: 9px; color: var(--text-muted); letter-spacing: 0.5px; }
+  .week-day { font-size: 8px; color: var(--text-muted); letter-spacing: 1px; }
 
   /* ── api key banner ── */
   .api-banner {
-    background: #1a1200;
-    border: 1px solid #443300;
+    background: #1e1610;
+    border: 1px solid #3e2e18;
     border-radius: var(--radius);
-    padding: 14px;
-    font-size: 12px;
+    padding: 13px;
+    font-size: 11px;
     color: var(--warn);
-    margin-bottom: 0;
+    letter-spacing: 0.5px;
     display: none;
   }
   .api-banner.show { display: block; }
-  .api-banner a { color: var(--warn); }
 
   .empty-state {
     text-align: center;
-    padding: 32px 16px;
+    padding: 30px 16px;
     color: var(--text-muted);
-    font-size: 12px;
-    line-height: 1.8;
+    font-size: 11px;
+    line-height: 2;
+    letter-spacing: 0.5px;
   }
 
   @keyframes spin { to { transform: rotate(360deg); } }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
-  /* ── mini result preview ── */
+  /* ── result preview ── */
   .result-preview {
     background: var(--surface2);
-    border: 1px solid var(--border);
+    border: 1px solid var(--border2);
     border-radius: var(--radius);
-    padding: 14px;
+    padding: 13px;
     margin-bottom: 14px;
     display: none;
     animation: fadeIn 0.2s ease;
   }
   .result-preview.show { display: block; }
-  .result-preview-title { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; letter-spacing: 0.5px; }
+  .result-preview-title { font-size: 9px; color: var(--text-muted); margin-bottom: 8px; letter-spacing: 2px; text-transform: uppercase; }
   .result-macros { display: flex; gap: 10px; flex-wrap: wrap; }
-  .result-macro { font-size: 12px; color: var(--text); }
-  .result-macro span { color: var(--accent); font-weight: 500; }
+  .result-macro { font-size: 12px; color: var(--text-mid); }
+  .result-macro span { color: var(--accent); }
 
   .tab-content { display: none; }
-  .tab-content.active { display: flex; flex-direction: column; gap: 16px; }
+  .tab-content.active { display: flex; flex-direction: column; gap: 14px; }
 
   /* scrollbar */
-  ::-webkit-scrollbar { width: 3px; }
+  ::-webkit-scrollbar { width: 2px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 1px; }
 </style>
 </head>
 <body>
 <div id="app">
 
   <header>
-    <div class="logo">FATTYTRACKER</div>
+    <div class="logo">FattyTracker</div>
     <div class="date-nav">
       <button id="prev-day" onclick="changeDay(-1)">‹</button>
       <span id="current-date"></span>
@@ -637,31 +673,31 @@
   <main>
     <!-- tabs -->
     <div class="tabs">
-      <button class="tab active" onclick="switchTab('log')">LOG</button>
-      <button class="tab" onclick="switchTab('body')">BODY</button>
-      <button class="tab" onclick="switchTab('chat')">CHAT</button>
-      <button class="tab" onclick="switchTab('settings')">SET</button>
+      <button class="tab active" onclick="switchTab('log')">Log</button>
+      <button class="tab" onclick="switchTab('body')">Body</button>
+      <button class="tab" onclick="switchTab('chat')">Chat</button>
+      <button class="tab" onclick="switchTab('settings')">Set</button>
     </div>
 
     <!-- log tab -->
     <div id="tab-log" class="tab-content active">
       <div class="api-banner" id="api-banner">
-        No API key set. Go to SET tab and enter your Anthropic API key to enable AI analysis.
+        No API key set. Go to Set and enter your Anthropic API key to enable AI analysis.
       </div>
 
       <!-- calorie summary -->
       <div class="card">
-        <div class="card-label">TODAY'S INTAKE</div>
+        <div class="card-label">Today's intake</div>
         <div class="calorie-summary">
           <div class="ring-wrap">
             <svg width="110" height="110" viewBox="0 0 110 110">
-              <circle cx="55" cy="55" r="46" fill="none" stroke="#222" stroke-width="8"/>
-              <circle id="ring-progress" cx="55" cy="55" r="46" fill="none" stroke="#c8f060" stroke-width="8"
-                stroke-linecap="round" stroke-dasharray="289" stroke-dashoffset="289" style="transition:stroke-dashoffset 0.6s cubic-bezier(0.4,0,0.2,1)"/>
+              <circle cx="55" cy="55" r="46" fill="none" stroke="#2e2620" stroke-width="6"/>
+              <circle id="ring-progress" cx="55" cy="55" r="46" fill="none" stroke="#c8956c" stroke-width="6"
+                stroke-linecap="round" stroke-dasharray="289" stroke-dashoffset="289" style="transition:stroke-dashoffset 0.7s cubic-bezier(0.4,0,0.2,1)"/>
             </svg>
             <div class="ring-center">
               <div class="ring-kcal" id="ring-kcal">0</div>
-              <div class="ring-label">KCAL</div>
+              <div class="ring-label">kcal</div>
             </div>
           </div>
           <div class="macro-grid">
@@ -691,7 +727,7 @@
                 <span class="macro-name">fiber</span>
                 <span class="macro-val" id="val-fiber">0g</span>
               </div>
-              <div class="bar-bg"><div class="bar-fill" id="bar-fiber" style="width:0%;background:#888"></div></div>
+              <div class="bar-bg"><div class="bar-fill" id="bar-fiber" style="width:0%;background:var(--text-muted)"></div></div>
             </div>
           </div>
         </div>
@@ -699,19 +735,19 @@
 
       <!-- weekly bars -->
       <div class="card">
-        <div class="card-label">THIS WEEK</div>
+        <div class="card-label">This week</div>
         <div class="week-bars" id="week-bars"></div>
       </div>
 
       <!-- log button -->
       <button class="log-btn" onclick="openLogModal()">
-        <span style="font-size:18px">+</span> LOG MEAL
+        <span style="font-size:16px;font-weight:300">+</span> Log meal
       </button>
 
       <!-- meals list -->
       <div class="card" id="meals-card">
-        <div class="card-label">MEALS</div>
-        <div id="meals-list"><div class="empty-state">Nothing logged yet.<br>Tap LOG MEAL to add your first meal.</div></div>
+        <div class="card-label">Meals</div>
+        <div id="meals-list"><div class="empty-state">Nothing logged yet.<br>Tap log meal to add your first entry.</div></div>
       </div>
     </div>
 
@@ -741,11 +777,11 @@
       </div>
 
       <button class="log-btn" onclick="openBodyModal()">
-        + LOG BODY METRICS
+        + Log body metrics
       </button>
 
       <div class="card">
-        <div class="card-label">HISTORY</div>
+        <div class="card-label">History</div>
         <div id="body-history-list"><div class="empty-state">No entries yet.</div></div>
       </div>
     </div>
@@ -768,16 +804,16 @@
     <!-- settings tab -->
     <div id="tab-settings" class="tab-content">
       <div class="settings-section">
-        <div class="settings-title">API KEY</div>
+        <div class="settings-title">API key</div>
         <div class="field">
           <label>Anthropic API Key</label>
           <input type="password" id="api-key-input" placeholder="sk-ant-..." oninput="saveApiKey()">
         </div>
-        <div style="font-size:11px;color:var(--text-muted);margin-top:-8px">Stored locally on your device only.</div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:-8px;letter-spacing:0.5px">Stored locally on your device only.</div>
       </div>
 
       <div class="settings-section">
-        <div class="settings-title">DAILY TARGETS</div>
+        <div class="settings-title">Daily targets</div>
         <div class="target-row">
           <div class="field">
             <label>Calories</label>
@@ -799,7 +835,7 @@
       </div>
 
       <div class="settings-section">
-        <div class="settings-title">PERSONAL</div>
+        <div class="settings-title">Personal</div>
         <div class="target-row">
           <div class="field">
             <label>Height (cm)</label>
@@ -817,7 +853,7 @@
       </div>
 
       <div class="settings-section">
-        <div class="settings-title">DATA</div>
+        <div class="settings-title">Data</div>
         <div class="btn-row">
           <button class="btn-secondary" onclick="exportData()">Export JSON</button>
           <button class="btn-secondary" onclick="exportCSV()">Export CSV</button>
@@ -831,7 +867,7 @@
 <div class="modal-overlay" id="log-modal">
   <div class="modal">
     <div class="modal-handle"></div>
-    <div class="modal-title">Log Meal</div>
+    <div class="modal-title">Log meal</div>
 
     <div class="photo-upload-area" id="upload-area">
       <input type="file" accept="image/*" id="photo-input" onchange="handlePhoto(event)">
@@ -847,17 +883,17 @@
 
     <div class="analyzing" id="analyzing-indicator">
       <div class="spinner"></div>
-      <span>Claude is analyzing your meal...</span>
+      <span>Analysing your meal...</span>
     </div>
 
     <div class="result-preview" id="result-preview">
-      <div class="result-preview-title">ESTIMATED MACROS</div>
+      <div class="result-preview-title">Estimated macros</div>
       <div class="result-macros" id="result-macros-display"></div>
     </div>
 
     <div class="btn-row">
       <button class="btn-secondary" onclick="closeLogModal()">Cancel</button>
-      <button class="btn-primary" id="analyze-btn" onclick="analyzeMeal()">Analyse and Log</button>
+      <button class="btn-primary" id="analyze-btn" onclick="analyzeMeal()">Analyse & log</button>
     </div>
   </div>
 </div>
@@ -866,7 +902,7 @@
 <div class="modal-overlay" id="edit-modal">
   <div class="modal">
     <div class="modal-handle"></div>
-    <div class="modal-title">Edit Meal</div>
+    <div class="modal-title">Edit meal</div>
     <div class="field">
       <label>Description</label>
       <input type="text" id="e-description">
@@ -904,7 +940,7 @@
 <div class="modal-overlay" id="body-modal">
   <div class="modal">
     <div class="modal-handle"></div>
-    <div class="modal-title">Log Body Metrics</div>
+    <div class="modal-title">Log body metrics</div>
     <div class="target-row">
       <div class="field">
         <label>Weight (kg)</label>
@@ -1053,7 +1089,7 @@ function renderMeals() {
   const list = document.getElementById('meals-list');
 
   if (!entries.length) {
-    list.innerHTML = '<div class="empty-state">Nothing logged yet.<br>Tap LOG MEAL to add your first meal.</div>';
+    list.innerHTML = '<div class="empty-state">Nothing logged yet.<br>Tap log meal to add your first entry.</div>';
     return;
   }
 
@@ -1073,7 +1109,7 @@ function renderMeals() {
         </div>
         <div class="meal-time">${e.time}</div>
       </div>
-      <button class="meal-delete" onclick="openEditModal(${i})" style="font-size:13px;color:var(--text-muted)">✎</button>
+      <button class="meal-delete" onclick="openEditModal(${i})" style="font-size:12px;color:var(--text-muted)">✎</button>
       <button class="meal-delete" onclick="deleteMeal(${i})">×</button>
     </div>
   `).join('');
@@ -1108,7 +1144,7 @@ function renderWeekBars() {
   bars.innerHTML = days.map(key => {
     const entries = getLog(key);
     const total = entries.reduce((s, e) => s + (e.calories || 0), 0);
-    const h = Math.round((total / maxCal) * 80);
+    const h = Math.round((total / maxCal) * 72);
     const d = new Date(key);
     const name = dayNames[d.getDay()];
     const isToday = key === todayKey();
@@ -1150,7 +1186,7 @@ function renderBody() {
     <div class="weight-log-row">
       <span class="weight-date">${e.date}</span>
       <div style="display:flex;gap:12px;font-size:12px">
-        ${e.weight  ? `<span>${e.weight}kg</span>` : ''}
+        ${e.weight  ? `<span class="weight-val">${e.weight}kg</span>` : ''}
         ${e.fat     ? `<span style="color:var(--text-muted)">${e.fat}% fat</span>` : ''}
         ${e.muscle  ? `<span style="color:var(--protein)">${e.muscle}% mus</span>` : ''}
       </div>
@@ -1174,7 +1210,6 @@ function openLogModal() {
   document.getElementById('analyzing-indicator').classList.remove('show');
   document.getElementById('result-preview').classList.remove('show');
   document.getElementById('analyze-btn').disabled = false;
-
   document.getElementById('log-modal').classList.add('open');
 }
 
@@ -1190,7 +1225,7 @@ function handlePhoto(e) {
   reader.onload = ev => {
     const img = new Image();
     img.onload = () => {
-      // resize to max 1024px on longest side
+      // resize to max 1024px on longest side before encoding
       const MAX = 1024;
       let { width, height } = img;
       if (width > height && width > MAX) {
@@ -1208,7 +1243,7 @@ function handlePhoto(e) {
       canvas.height = height;
       canvas.getContext('2d').drawImage(img, 0, 0, width, height);
 
-      // encode as JPEG at 0.7 quality
+      // encode as JPEG at 0.7 quality to stay within safari payload limits
       const compressed = canvas.toDataURL('image/jpeg', 0.7);
       document.getElementById('preview-img').src = compressed;
       document.getElementById('preview-img').style.display = 'block';
@@ -1224,7 +1259,7 @@ async function analyzeMeal() {
   const apiKey = getApiKey();
 
   if (!apiKey) {
-    alert('Add your Anthropic API key in the SET tab first.');
+    alert('Add your Anthropic API key in the Set tab first.');
     return;
   }
 
@@ -1233,7 +1268,6 @@ async function analyzeMeal() {
     return;
   }
 
-  // reset if re-analyzing
   pendingMacros = null;
 
   document.getElementById('analyze-btn').disabled = true;
@@ -1359,9 +1393,9 @@ function deleteMeal(index) {
 
 // ── body modal ─────────────────────────────────────────────────────────────
 function openBodyModal() {
-  document.getElementById('b-weight').value  = '';
-  document.getElementById('b-fat').value     = '';
-  document.getElementById('b-muscle').value  = '';
+  document.getElementById('b-weight').value   = '';
+  document.getElementById('b-fat').value      = '';
+  document.getElementById('b-muscle').value   = '';
   document.getElementById('b-visceral').value = '';
   document.getElementById('body-modal').classList.add('open');
 }
@@ -1439,7 +1473,7 @@ async function sendChat() {
 
   const apiKey = getApiKey();
   if (!apiKey) {
-    alert('Add your Anthropic API key in the SET tab first.');
+    alert('Add your Anthropic API key in the Set tab first.');
     return;
   }
 
@@ -1552,7 +1586,7 @@ function exportData() {
   const blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'cuttrack-export.json';
+  a.download = 'fattytracker-export.json';
   a.click();
 }
 
@@ -1569,7 +1603,7 @@ function exportCSV() {
   const blob = new Blob([csv], { type: 'text/csv' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'cuttrack-export.csv';
+  a.download = 'fattytracker-export.csv';
   a.click();
 }
 
