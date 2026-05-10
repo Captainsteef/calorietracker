@@ -19,8 +19,8 @@
     --accent:      #e8e8e8;
     --accent-dim:  #aaaaaa;
     --text:        #e8e8e8;
-    --text-muted:  #555555;
-    --text-mid:    #aaaaaa;
+    --text-muted:  #888888;
+    --text-mid:    #cccccc;
     --danger:      #e05a4a;
     --warn:        #ccaa66;
     --protein:     #88aacc;
@@ -269,20 +269,24 @@
   .meal-time { font-size: 11px; color: var(--text-muted); margin-top: 5px; letter-spacing: 1px; }
 
   /* ── meal action buttons ── */
-  .meal-actions { display: flex; flex-direction: column; gap: 2px; flex-shrink: 0; }
+  .meal-actions { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
 
   .meal-action-btn {
     background: none;
     border: none;
-    color: var(--text-muted);
+    color: var(--text-mid);
     cursor: pointer;
-    font-size: 16px;
-    padding: 6px 5px;
+    font-size: 20px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: color 0.15s;
     font-family: 'Inconsolata', monospace;
-    line-height: 1;
+    border-radius: var(--radius);
   }
-  .meal-action-btn:hover { color: var(--accent); }
+  .meal-action-btn:hover { color: var(--accent); background: var(--surface2); }
   .meal-action-btn.danger:hover { color: var(--danger); }
 
   /* bookmark saved state */
@@ -1199,7 +1203,7 @@ function renderMeals() {
         </div>
         <div class="meal-actions">
           <button class="meal-action-btn${alreadySaved ? ' saved' : ''}" onclick="saveMealFromLog(${i})" title="${alreadySaved ? 'Already saved' : 'Save meal'}">&#9673;</button>
-          <button class="meal-action-btn" onclick="openEditModal(${i})" title="Edit" style="font-size:12px">&#9998;</button>
+          <button class="meal-action-btn" onclick="openEditModal(${i})" title="Edit">&#9998;</button>
           <button class="meal-action-btn danger" onclick="deleteMeal(${i})" title="Delete">&#215;</button>
         </div>
       </div>
@@ -1312,7 +1316,7 @@ function renderSaved() {
       </div>
       <div class="meal-actions">
         <button class="saved-add-btn" onclick="addSavedToLog('${m.id}')" title="Add to today">+</button>
-        <button class="meal-action-btn" onclick="openEditSavedModal('${m.id}')" title="Edit" style="font-size:12px">&#9998;</button>
+        <button class="meal-action-btn" onclick="openEditSavedModal('${m.id}')" title="Edit">&#9998;</button>
         <button class="meal-action-btn danger" onclick="deleteSavedMeal('${m.id}')" title="Delete">&#215;</button>
       </div>
     </div>
