@@ -22,9 +22,9 @@
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html { background: #111111; }
-body { font-family: 'Inconsolata', monospace; background: var(--bg); color: var(--text); height: 100dvh; overflow: hidden; }
-#app { display: flex; flex-direction: column; height: 100dvh; overflow: hidden; }
+html, body { height: 100%; background: #111111; }
+body { font-family: 'Inconsolata', monospace; color: var(--text); }
+#app { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--bg); overflow: hidden; }
 
 /* ── header ── */
 header {
@@ -197,6 +197,15 @@ header {
 
 /* ── misc ── */
 .empty-state { text-align: center; padding: 28px 16px; color: var(--text-muted); font-size: 11px; line-height: 2; letter-spacing: 0.5px; }
+.edit-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+.edit-btn { width: 100%; padding: 15px; background: none; border-radius: 10px; font-family: 'Inconsolata', monospace; font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; transition: background 0.15s; -webkit-appearance: none; border: 1px solid; }
+.edit-btn-done { color: var(--accent); border-color: var(--accent-dim); }
+.edit-btn-done:active { background: var(--surface2); }
+.edit-btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.edit-btn-neutral { color: var(--text-mid); border-color: var(--border2); }
+.edit-btn-neutral:active { background: var(--surface2); }
+.edit-btn-danger { color: var(--danger); border-color: #5a2a22; }
+.edit-btn-danger:active { background: #2a1410; }
 .toast { position: fixed; bottom: calc(var(--safe-bottom) + 84px); left: 50%; transform: translateX(-50%) translateY(8px); background: var(--surface2); border: 1px solid var(--accent-dim); color: var(--accent); font-size: 11px; letter-spacing: 1px; padding: 10px 18px; border-radius: 8px; z-index: 300; opacity: 0; transition: opacity 0.2s, transform 0.2s; pointer-events: none; white-space: nowrap; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 ::-webkit-scrollbar { width: 2px; }
@@ -819,10 +828,12 @@ function openEditModal(index) {
   document.getElementById('e-fat').value         = e.fat         || 0;
   document.getElementById('e-fiber').value       = e.fiber       || 0;
   document.getElementById('edit-btn-row').innerHTML = `
-    <button class="btn-primary" style="width:100%;margin-bottom:8px" onclick="saveEditedMeal()">Done</button>
-    <div style="display:flex;gap:10px">
-      <button class="btn-secondary" style="flex:1" onclick="saveMealFromEdit()"><i class="ti ti-bookmark" style="font-size:13px;vertical-align:-1px"></i> Save meal</button>
-      <button class="btn-secondary" style="flex:1;color:var(--danger);border-color:var(--danger)" onclick="deleteMealFromEdit()">Delete</button>
+    <div class="edit-actions">
+      <button class="edit-btn edit-btn-done" onclick="saveEditedMeal()">Done</button>
+      <div class="edit-btn-row">
+        <button class="edit-btn edit-btn-neutral" onclick="saveMealFromEdit()">Save meal</button>
+        <button class="edit-btn edit-btn-danger" onclick="deleteMealFromEdit()">Delete</button>
+      </div>
     </div>
   `;
   document.getElementById('edit-modal').classList.add('open');
@@ -839,10 +850,12 @@ function openEditSavedModal(id) {
   document.getElementById('e-fat').value         = m.fat         || 0;
   document.getElementById('e-fiber').value       = m.fiber       || 0;
   document.getElementById('edit-btn-row').innerHTML = `
-    <button class="btn-primary" style="width:100%;margin-bottom:8px" onclick="saveEditedMeal()">Done</button>
-    <div style="display:flex;gap:10px">
-      <button class="btn-secondary" style="flex:1" onclick="addSavedToLogFromEdit()">+ Add to today</button>
-      <button class="btn-secondary" style="flex:1;color:var(--danger);border-color:var(--danger)" onclick="deleteSavedFromEdit()">Delete</button>
+    <div class="edit-actions">
+      <button class="edit-btn edit-btn-done" onclick="saveEditedMeal()">Done</button>
+      <div class="edit-btn-row">
+        <button class="edit-btn edit-btn-neutral" onclick="addSavedToLogFromEdit()">Add to today</button>
+        <button class="edit-btn edit-btn-danger" onclick="deleteSavedFromEdit()">Delete</button>
+      </div>
     </div>
   `;
   document.getElementById('edit-modal').classList.add('open');
