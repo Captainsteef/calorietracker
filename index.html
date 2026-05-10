@@ -22,9 +22,9 @@
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html, body { height: 100%; background: #111111; }
+html, body { height: 100%; background: #111111; overflow: hidden; }
 body { font-family: 'Inconsolata', monospace; color: var(--text); }
-#app { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--bg); overflow: hidden; }
+#app { position: fixed; top: 0; left: 0; right: 0; display: flex; flex-direction: column; background: var(--bg); overflow: hidden; }
 
 /* ── header ── */
 header {
@@ -461,6 +461,15 @@ header {
 </div>
 
 <script>
+// ── iOS viewport height fix ────────────────────────────────────────────────
+// window.innerHeight is always the true visible height; CSS vh/dvh are not
+// reliable on iOS Safari because the address bar changes the viewport size.
+function fixAppHeight() {
+  document.getElementById('app').style.height = window.innerHeight + 'px';
+}
+fixAppHeight();
+window.addEventListener('resize', fixAppHeight);
+
 // ── state ──────────────────────────────────────────────────────────────────
 let currentDate = todayKey();
 let pendingMacros = null;
