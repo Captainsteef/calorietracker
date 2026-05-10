@@ -754,9 +754,11 @@
         <div class="calorie-summary">
           <div class="ring-wrap">
             <svg width="110" height="110" viewBox="0 0 110 110">
-              <circle cx="55" cy="55" r="46" fill="none" stroke="#2e2620" stroke-width="6"/>
+              <circle cx="55" cy="55" r="46" fill="none" stroke="#2e2e2e" stroke-width="6"/>
               <circle id="ring-progress" cx="55" cy="55" r="46" fill="none" stroke="#e8e8e8" stroke-width="6"
                 stroke-linecap="round" stroke-dasharray="289" stroke-dashoffset="289" style="transition:stroke-dashoffset 0.7s cubic-bezier(0.4,0,0.2,1)"/>
+              <circle id="ring-overflow" cx="55" cy="55" r="46" fill="none" stroke="#e05a4a" stroke-width="6"
+                stroke-linecap="round" stroke-dasharray="289" stroke-dashoffset="289" style="transition:stroke-dashoffset 0.7s cubic-bezier(0.4,0,0.2,1);opacity:0"/>
             </svg>
             <div class="ring-center">
               <div class="ring-kcal" id="ring-kcal">0</div>
@@ -1148,17 +1150,31 @@ function renderSummary() {
     return acc;
   }, { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 });
 
-  // ring
-  const pct = Math.min(totals.calories / targets.calories, 1);
+  // ring — wraps around if over target
   const circumference = 289;
-  const offset = circumference - (pct * circumference);
-  document.getElementById('ring-progress').style.strokeDashoffset = offset;
-  document.getElementById('ring-kcal').textContent = Math.round(totals.calories);
+  const ratio = totals.calories / targets.calories;
+  const overTarget = ratio > 1;
 
-  // color ring red if over target
-  const ringColor = totals.calories > targets.calories ? 'var(--danger)' : 'var(--accent)';
-  document.getElementById('ring-progress').style.stroke = ringColor;
-  document.getElementById('ring-kcal').style.color = ringColor;
+  if (!overTarget) {
+    // normal: fill from 0 to ratio
+    const offset = circumference - (ratio * circumference);
+    document.getElementById('ring-progress').style.strokeDashoffset = offset;
+    document.getElementById('ring-progress').style.stroke = 'var(--accent)';
+    document.getElementById('ring-overflow').style.opacity = '0';
+    document.getElementById('ring-overflow').style.strokeDashoffset = circumference;
+  } else {
+    // full base ring in muted color
+    document.getElementById('ring-progress').style.strokeDashoffset = '0';
+    document.getElementById('ring-progress').style.stroke = '#444444';
+    // overflow ring shows only the excess (ratio - 1, capped at 1 extra lap)
+    const overflowRatio = Math.min(ratio - 1, 1);
+    const overflowOffset = circumference - (overflowRatio * circumference);
+    document.getElementById('ring-overflow').style.opacity = '1';
+    document.getElementById('ring-overflow').style.strokeDashoffset = overflowOffset;
+  }
+
+  document.getElementById('ring-kcal').textContent = Math.round(totals.calories);
+  document.getElementById('ring-kcal').style.color = overTarget ? 'var(--danger)' : 'var(--accent)';
 
   // macros
   document.getElementById('val-protein').textContent = Math.round(totals.protein) + 'g';
