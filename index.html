@@ -11,21 +11,21 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Inconsolata:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg:          #1c1814;
-    --surface:     #221e19;
-    --surface2:    #2a2420;
-    --border:      #2e2620;
-    --border2:     #3e3428;
-    --accent:      #c8956c;
-    --accent-dim:  #a87450;
-    --text:        #e8dcc8;
-    --text-muted:  #6b5c40;
-    --text-mid:    #9a8a6a;
-    --danger:      #c85a4a;
-    --warn:        #c8956c;
-    --protein:     #8ab4c8;
-    --carbs:       #b4a870;
-    --fat:         #c8956c;
+    --bg:          #111111;
+    --surface:     #1a1a1a;
+    --surface2:    #222222;
+    --border:      #2e2e2e;
+    --border2:     #3a3a3a;
+    --accent:      #e8e8e8;
+    --accent-dim:  #aaaaaa;
+    --text:        #e8e8e8;
+    --text-muted:  #555555;
+    --text-mid:    #aaaaaa;
+    --danger:      #e05a4a;
+    --warn:        #ccaa66;
+    --protein:     #88aacc;
+    --carbs:       #aaaa77;
+    --fat:         #ccaa77;
     --radius:      4px;
     --safe-top:    env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -39,7 +39,7 @@
     color: var(--text);
     min-height: 100dvh;
     overflow-x: hidden;
-    font-size: 14px;
+    font-size: 15px;
   }
 
   /* ── layout ── */
@@ -109,13 +109,13 @@
 
   .tab {
     flex: 1;
-    padding: 10px 4px;
+    padding: 13px 4px;
     background: none;
     border: none;
     border-right: 1px solid var(--border);
     color: var(--text-muted);
     font-family: 'Inconsolata', monospace;
-    font-size: 10px;
+    font-size: 11px;
     cursor: pointer;
     transition: all 0.2s;
     letter-spacing: 2px;
@@ -133,7 +133,7 @@
   }
 
   .card-label {
-    font-size: 9px;
+    font-size: 10px;
     letter-spacing: 3px;
     color: var(--text-muted);
     text-transform: uppercase;
@@ -162,19 +162,19 @@
 
   .ring-kcal {
     font-family: 'Playfair Display', serif;
-    font-size: 26px;
+    font-size: 28px;
     font-weight: 400;
     line-height: 1;
     color: var(--accent);
   }
 
-  .ring-label { font-size: 8px; color: var(--text-muted); letter-spacing: 2px; margin-top: 4px; text-transform: uppercase; }
+  .ring-label { font-size: 9px; color: var(--text-muted); letter-spacing: 2px; margin-top: 4px; text-transform: uppercase; }
 
   .macro-grid { flex: 1; display: flex; flex-direction: column; gap: 9px; }
 
   .macro-row { display: flex; flex-direction: column; gap: 5px; }
 
-  .macro-info { display: flex; justify-content: space-between; font-size: 11px; }
+  .macro-info { display: flex; justify-content: space-between; font-size: 12px; }
 
   .macro-name { color: var(--text-muted); letter-spacing: 1px; }
 
@@ -191,14 +191,14 @@
     justify-content: center;
     gap: 10px;
     width: 100%;
-    padding: 15px;
+    padding: 18px;
     background: none;
     color: var(--accent);
     border: 1px solid var(--accent-dim);
     border-radius: var(--radius);
     font-family: 'Inconsolata', monospace;
     font-weight: 400;
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 3px;
     text-transform: uppercase;
     cursor: pointer;
@@ -221,7 +221,7 @@
   .meal-item:first-child { padding-top: 0; }
 
   .meal-thumb {
-    width: 48px; height: 48px;
+    width: 54px; height: 54px;
     border-radius: var(--radius);
     object-fit: cover;
     flex-shrink: 0;
@@ -230,7 +230,7 @@
   }
 
   .meal-thumb-placeholder {
-    width: 48px; height: 48px;
+    width: 54px; height: 54px;
     border-radius: var(--radius);
     background: var(--surface2);
     border: 1px solid var(--border2);
@@ -238,16 +238,16 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
+    font-size: 22px;
   }
 
   .meal-info { flex: 1; min-width: 0; }
 
   .meal-desc {
     font-family: 'Playfair Display', serif;
-    font-size: 13px;
+    font-size: 14px;
     color: var(--text);
-    margin-bottom: 5px;
+    margin-bottom: 6px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -257,8 +257,8 @@
   .meal-macros { display: flex; gap: 6px; flex-wrap: wrap; }
 
   .macro-chip {
-    font-size: 9px;
-    padding: 2px 7px;
+    font-size: 10px;
+    padding: 3px 8px;
     border-radius: 2px;
     background: var(--surface2);
     border: 1px solid var(--border2);
@@ -266,7 +266,7 @@
     letter-spacing: 0.5px;
   }
 
-  .meal-time { font-size: 10px; color: var(--text-muted); margin-top: 5px; letter-spacing: 1px; }
+  .meal-time { font-size: 11px; color: var(--text-muted); margin-top: 5px; letter-spacing: 1px; }
 
   /* ── meal action buttons ── */
   .meal-actions { display: flex; flex-direction: column; gap: 2px; flex-shrink: 0; }
@@ -276,8 +276,8 @@
     border: none;
     color: var(--text-muted);
     cursor: pointer;
-    font-size: 13px;
-    padding: 3px 4px;
+    font-size: 16px;
+    padding: 6px 5px;
     transition: color 0.15s;
     font-family: 'Inconsolata', monospace;
     line-height: 1;
@@ -364,7 +364,7 @@
 
   .field label {
     display: block;
-    font-size: 9px;
+    font-size: 10px;
     letter-spacing: 2px;
     color: var(--text-muted);
     text-transform: uppercase;
@@ -378,8 +378,8 @@
     border-radius: var(--radius);
     color: var(--text);
     font-family: 'Inconsolata', monospace;
-    font-size: 14px;
-    padding: 11px 14px;
+    font-size: 16px;
+    padding: 13px 14px;
     outline: none;
     transition: border-color 0.15s;
     -webkit-appearance: none;
@@ -392,13 +392,13 @@
 
   .btn-secondary {
     flex: 1;
-    padding: 13px;
+    padding: 15px;
     background: none;
     border: 1px solid var(--border2);
     color: var(--text-mid);
     border-radius: var(--radius);
     font-family: 'Inconsolata', monospace;
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 1px;
     cursor: pointer;
     transition: all 0.15s;
@@ -407,13 +407,13 @@
 
   .btn-primary {
     flex: 2;
-    padding: 13px;
+    padding: 15px;
     background: none;
     border: 1px solid var(--accent-dim);
     color: var(--accent);
     border-radius: var(--radius);
     font-family: 'Inconsolata', monospace;
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 2px;
     text-transform: uppercase;
     cursor: pointer;
@@ -479,13 +479,13 @@
   }
   .metric-num {
     font-family: 'Playfair Display', serif;
-    font-size: 28px;
+    font-size: 30px;
     font-weight: 400;
     color: var(--accent);
     line-height: 1;
   }
-  .metric-unit { font-size: 10px; color: var(--text-muted); margin-top: 2px; letter-spacing: 1px; }
-  .metric-label { font-size: 9px; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; margin-top: 6px; }
+  .metric-unit { font-size: 11px; color: var(--text-muted); margin-top: 2px; letter-spacing: 1px; }
+  .metric-label { font-size: 10px; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; margin-top: 6px; }
 
   /* ── chat tab ── */
   .chat-container {
@@ -508,9 +508,9 @@
 
   .chat-msg {
     max-width: 85%;
-    padding: 10px 14px;
+    padding: 11px 15px;
     border-radius: var(--radius);
-    font-size: 13px;
+    font-size: 14px;
     line-height: 1.6;
     animation: fadeIn 0.2s ease;
   }
@@ -569,7 +569,7 @@
   /* ── settings tab ── */
   .settings-section { margin-bottom: 22px; }
   .settings-title {
-    font-size: 9px;
+    font-size: 10px;
     letter-spacing: 3px;
     color: var(--text-muted);
     text-transform: uppercase;
@@ -676,9 +676,9 @@
     border: 1px solid var(--accent-dim);
     color: var(--accent);
     border-radius: var(--radius);
-    width: 32px; height: 32px;
+    width: 36px; height: 36px;
     cursor: pointer;
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 300;
     flex-shrink: 0;
     transition: all 0.15s;
@@ -714,11 +714,6 @@
   ::-webkit-scrollbar { width: 2px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 1px; }
-
-  .field input, .field textarea, .field select,
-  .chat-input-row input {
-    font-size: 16px;
-  }
 </style>
 </head>
 <body>
@@ -756,7 +751,7 @@
           <div class="ring-wrap">
             <svg width="110" height="110" viewBox="0 0 110 110">
               <circle cx="55" cy="55" r="46" fill="none" stroke="#2e2620" stroke-width="6"/>
-              <circle id="ring-progress" cx="55" cy="55" r="46" fill="none" stroke="#c8956c" stroke-width="6"
+              <circle id="ring-progress" cx="55" cy="55" r="46" fill="none" stroke="#e8e8e8" stroke-width="6"
                 stroke-linecap="round" stroke-dasharray="289" stroke-dashoffset="289" style="transition:stroke-dashoffset 0.7s cubic-bezier(0.4,0,0.2,1)"/>
             </svg>
             <div class="ring-center">
