@@ -22,6 +22,7 @@
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { background: #111111; }
 body { font-family: 'Inconsolata', monospace; background: var(--bg); color: var(--text); height: 100dvh; overflow: hidden; }
 #app { display: flex; flex-direction: column; height: 100dvh; overflow: hidden; }
 
@@ -818,10 +819,11 @@ function openEditModal(index) {
   document.getElementById('e-fat').value         = e.fat         || 0;
   document.getElementById('e-fiber').value       = e.fiber       || 0;
   document.getElementById('edit-btn-row').innerHTML = `
-    <button class="btn-secondary" onclick="closeEditModal()">Cancel</button>
-    <button class="btn-secondary" style="color:var(--danger);border-color:var(--danger)" onclick="deleteMealFromEdit()">Delete</button>
-    <button class="btn-secondary" onclick="saveMealFromEdit()"><i class="ti ti-bookmark" style="font-size:14px"></i> Save</button>
-    <button class="btn-primary" onclick="saveEditedMeal()">Done</button>
+    <button class="btn-primary" style="width:100%;margin-bottom:8px" onclick="saveEditedMeal()">Done</button>
+    <div style="display:flex;gap:10px">
+      <button class="btn-secondary" style="flex:1" onclick="saveMealFromEdit()"><i class="ti ti-bookmark" style="font-size:13px;vertical-align:-1px"></i> Save meal</button>
+      <button class="btn-secondary" style="flex:1;color:var(--danger);border-color:var(--danger)" onclick="deleteMealFromEdit()">Delete</button>
+    </div>
   `;
   document.getElementById('edit-modal').classList.add('open');
 }
@@ -837,10 +839,11 @@ function openEditSavedModal(id) {
   document.getElementById('e-fat').value         = m.fat         || 0;
   document.getElementById('e-fiber').value       = m.fiber       || 0;
   document.getElementById('edit-btn-row').innerHTML = `
-    <button class="btn-secondary" onclick="closeEditModal()">Cancel</button>
-    <button class="btn-secondary" style="color:var(--danger);border-color:var(--danger)" onclick="deleteSavedFromEdit()">Delete</button>
-    <button class="btn-secondary" onclick="addSavedToLogFromEdit()">+ Today</button>
-    <button class="btn-primary" onclick="saveEditedMeal()">Done</button>
+    <button class="btn-primary" style="width:100%;margin-bottom:8px" onclick="saveEditedMeal()">Done</button>
+    <div style="display:flex;gap:10px">
+      <button class="btn-secondary" style="flex:1" onclick="addSavedToLogFromEdit()">+ Add to today</button>
+      <button class="btn-secondary" style="flex:1;color:var(--danger);border-color:var(--danger)" onclick="deleteSavedFromEdit()">Delete</button>
+    </div>
   `;
   document.getElementById('edit-modal').classList.add('open');
 }
