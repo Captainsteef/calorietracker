@@ -121,29 +121,17 @@ header {
 .saved-chips { display: flex; gap: 5px; flex-wrap: wrap; }
 
 /* ── chat panel ── */
-#panel-chat { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 160px); }
-#chat-messages { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
-.chat-input-bar {
-  display: none;
-  position: fixed;
-  left: 0; right: 0;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 68px);
-  padding: 10px 14px;
-  background: var(--surface);
-  border-top: 1px solid var(--border);
-  z-index: 90;
-  gap: 8px;
-  align-items: center;
-}
-.chat-input-bar.visible { display: flex; }
-.chat-messages { flex: 1; overflow-y: auto; }
+#panel-chat { overflow: hidden; padding-bottom: 0; }
+.chat-outer { display: flex; flex-direction: column; margin: 0 14px calc(env(safe-area-inset-bottom, 0px) + 90px); background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; height: calc(100vh - 180px); min-height: 300px; }
+.chat-messages { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
 .chat-msg { max-width: 85%; padding: 10px 13px; border-radius: 10px; font-size: 13px; line-height: 1.6; animation: fadeUp 0.2s ease; }
 .chat-msg.user { background: var(--surface2); border: 1px solid var(--border2); color: var(--accent); align-self: flex-end; }
 .chat-msg.assistant { background: #161616; border: 1px solid #2a2a2a; color: var(--text-mid); align-self: flex-start; }
 .chat-msg.typing { color: var(--text-muted); font-style: italic; }
+.chat-input-row { display: flex; gap: 8px; padding: 10px; border-top: 1px solid var(--border); }
 .chat-input-row input { flex: 1; background: var(--surface2); border: 1px solid var(--border2); border-radius: 8px; color: var(--accent); font-family: 'Inconsolata', monospace; font-size: 16px; padding: 9px 12px; outline: none; }
 .chat-input-row input:focus { border-color: var(--accent-dim); }
-.chat-send { background: none; border: 1px solid var(--border2); color: var(--accent); border-radius: 8px; width: 38px; height: 38px; cursor: pointer; font-size: 15px; flex-shrink: 0; transition: all 0.15s; font-family: 'Inconsolata', monospace; }
+.chat-send { background: none; border: 1px solid var(--border2); color: var(--accent); border-radius: 8px; width: 38px; cursor: pointer; font-size: 15px; flex-shrink: 0; transition: all 0.15s; font-family: 'Inconsolata', monospace; }
 .chat-send:hover:not(:disabled) { background: var(--surface2); }
 .chat-send:disabled { opacity: 0.35; }
 
@@ -327,8 +315,14 @@ header {
   <!-- CHAT -->
   <div class="panel" id="panel-chat">
     <div class="sec-label">Nutrition chat</div>
-    <div id="chat-messages">
-      <div class="chat-msg assistant">Hey. Ask me anything about your nutrition data, macros, progress, or cut goals. I have access to your full log.</div>
+    <div class="chat-outer">
+      <div class="chat-messages" id="chat-messages">
+        <div class="chat-msg assistant">Hey. Ask me anything about your nutrition data, macros, progress, or cut goals. I have access to your full log.</div>
+      </div>
+      <div class="chat-input-row">
+        <input type="text" id="chat-input" placeholder="Ask about your data..." onkeydown="if(event.key==='Enter')sendChat()">
+        <button class="chat-send" id="chat-send-btn" onclick="sendChat()">&#8593;</button>
+      </div>
     </div>
   </div>
 
@@ -384,11 +378,6 @@ header {
       </div>
     </div>
     <div style="height:8px"></div>
-  </div>
-
-  <div class="chat-input-bar" id="chat-input-bar">
-    <input type="text" id="chat-input" placeholder="Ask about your data..." onkeydown="if(event.key==='Enter')sendChat()">
-    <button class="chat-send" id="chat-send-btn" onclick="sendChat()">&#8593;</button>
   </div>
 
   <nav class="bottom-nav">
@@ -527,7 +516,6 @@ function switchPanel(name) {
     document.getElementById('panel-' + n).classList.toggle('active', n === name);
     document.getElementById('nav-' + n).classList.toggle('active', n === name);
   });
-  document.getElementById('chat-input-bar').classList.toggle('visible', name === 'chat');
 }
 
 // ── swipe ──────────────────────────────────────────────────────────────────
@@ -991,7 +979,7 @@ function addChatMsg(role, text, isTyping = false) {
   el.className = 'chat-msg ' + role + (isTyping ? ' typing' : '');
   el.textContent = text;
   container.appendChild(el);
-  window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+  container.scrollTop = container.scrollHeight;
   return el;
 }
 
