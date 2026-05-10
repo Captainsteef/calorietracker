@@ -268,18 +268,25 @@
 
   .meal-time { font-size: 10px; color: var(--text-muted); margin-top: 5px; letter-spacing: 1px; }
 
-  .meal-delete {
+  /* ── meal action buttons ── */
+  .meal-actions { display: flex; flex-direction: column; gap: 2px; flex-shrink: 0; }
+
+  .meal-action-btn {
     background: none;
     border: none;
     color: var(--text-muted);
     cursor: pointer;
-    font-size: 15px;
-    padding: 4px;
+    font-size: 13px;
+    padding: 3px 4px;
     transition: color 0.15s;
-    flex-shrink: 0;
     font-family: 'Inconsolata', monospace;
+    line-height: 1;
   }
-  .meal-delete:hover { color: var(--danger); }
+  .meal-action-btn:hover { color: var(--accent); }
+  .meal-action-btn.danger:hover { color: var(--danger); }
+
+  /* bookmark saved state */
+  .meal-action-btn.saved { color: var(--accent); }
 
   /* ── modal ── */
   .modal-overlay {
@@ -652,6 +659,57 @@
   .tab-content { display: none; }
   .tab-content.active { display: flex; flex-direction: column; gap: 14px; }
 
+  /* ── saved meals tab ── */
+  .saved-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    animation: fadeIn 0.25s ease;
+  }
+  .saved-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .saved-item:first-child { padding-top: 0; }
+
+  .saved-add-btn {
+    background: none;
+    border: 1px solid var(--accent-dim);
+    color: var(--accent);
+    border-radius: var(--radius);
+    width: 32px; height: 32px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: 300;
+    flex-shrink: 0;
+    transition: all 0.15s;
+    font-family: 'Inconsolata', monospace;
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 8px;
+  }
+  .saved-add-btn:hover { background: var(--surface2); }
+  .saved-add-btn:active { transform: scale(0.95); }
+
+  /* toast notification */
+  .toast {
+    position: fixed;
+    bottom: calc(var(--safe-bottom) + 24px);
+    left: 50%;
+    transform: translateX(-50%) translateY(8px);
+    background: var(--surface2);
+    border: 1px solid var(--accent-dim);
+    color: var(--accent);
+    font-size: 11px;
+    letter-spacing: 1px;
+    padding: 10px 18px;
+    border-radius: var(--radius);
+    z-index: 300;
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
   /* scrollbar */
   ::-webkit-scrollbar { width: 2px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -679,6 +737,7 @@
     <!-- tabs -->
     <div class="tabs">
       <button class="tab active" onclick="switchTab('log')">Log</button>
+      <button class="tab" onclick="switchTab('saved')">Saved</button>
       <button class="tab" onclick="switchTab('body')">Body</button>
       <button class="tab" onclick="switchTab('chat')">Chat</button>
       <button class="tab" onclick="switchTab('settings')">Set</button>
@@ -753,6 +812,14 @@
       <div class="card" id="meals-card">
         <div class="card-label">Meals</div>
         <div id="meals-list"><div class="empty-state">Nothing logged yet.<br>Tap log meal to add your first entry.</div></div>
+      </div>
+    </div>
+
+    <!-- saved meals tab -->
+    <div id="tab-saved" class="tab-content">
+      <div class="card">
+        <div class="card-label">Saved meals</div>
+        <div id="saved-list"><div class="empty-state">No saved meals yet.<br>Tap the bookmark icon on any logged meal to save it.</div></div>
       </div>
     </div>
 
@@ -868,6 +935,9 @@
   </main>
 </div>
 
+<!-- toast -->
+<div class="toast" id="toast"></div>
+
 <!-- log meal modal -->
 <div class="modal-overlay" id="log-modal">
   <div class="modal">
@@ -903,7 +973,7 @@
   </div>
 </div>
 
-<!-- edit meal modal -->
+<!-- edit meal modal (used for both daily meals and saved meals) -->
 <div class="modal-overlay" id="edit-modal">
   <div class="modal">
     <div class="modal-handle"></div>
@@ -978,6 +1048,10 @@ let pendingMacros = null;
 let photoBase64 = null;
 let chatHistory = [];
 
+// editContext tracks whether the edit modal is operating on a daily meal or a saved meal
+// { type: 'daily', index: N } or { type: 'saved', id: '...' }
+let editContext = null;
+
 // ── storage helpers ────────────────────────────────────────────────────────
 function todayKey() {
   return new Date().toISOString().split('T')[0];
@@ -1009,6 +1083,15 @@ function saveBodyLog(entries) {
 
 function getApiKey() {
   return localStorage.getItem('anthropic_key') || '';
+}
+
+// saved meals: array of { id, description, calories, protein, carbs, fat, fiber, photo }
+function getSavedMeals() {
+  return JSON.parse(localStorage.getItem('saved_meals') || '[]');
+}
+
+function saveSavedMeals(meals) {
+  localStorage.setItem('saved_meals', JSON.stringify(meals));
 }
 
 // ── api ────────────────────────────────────────────────────────────────────
@@ -1049,6 +1132,7 @@ function renderAll() {
   renderMeals();
   renderWeekBars();
   renderBody();
+  renderSaved();
   checkApiKey();
 }
 
@@ -1091,6 +1175,7 @@ function renderSummary() {
 
 function renderMeals() {
   const entries = getLog(currentDate);
+  const savedMeals = getSavedMeals();
   const list = document.getElementById('meals-list');
 
   if (!entries.length) {
@@ -1098,39 +1183,46 @@ function renderMeals() {
     return;
   }
 
-  list.innerHTML = entries.map((e, i) => `
-    <div class="meal-item">
-      ${e.photo
-        ? `<img class="meal-thumb" src="${e.photo}" alt="meal">`
-        : `<div class="meal-thumb-placeholder">${mealEmoji(e)}</div>`
-      }
-      <div class="meal-info">
-        <div class="meal-desc">${escHtml(e.description)}</div>
-        <div class="meal-macros">
-          <span class="macro-chip">${Math.round(e.calories)} kcal</span>
-          <span class="macro-chip" style="color:var(--protein)">${Math.round(e.protein)}g P</span>
-          <span class="macro-chip" style="color:var(--carbs)">${Math.round(e.carbs)}g C</span>
-          <span class="macro-chip" style="color:var(--fat)">${Math.round(e.fat)}g F</span>
+  list.innerHTML = entries.map((e, i) => {
+    // check if this meal is already saved (match by description + calories as a heuristic)
+    const alreadySaved = savedMeals.some(s => s.description === e.description && s.calories === e.calories);
+    return `
+      <div class="meal-item">
+        ${e.photo
+          ? `<img class="meal-thumb" src="${e.photo}" alt="meal">`
+          : `<div class="meal-thumb-placeholder">${mealEmoji(e)}</div>`
+        }
+        <div class="meal-info">
+          <div class="meal-desc">${escHtml(e.description)}</div>
+          <div class="meal-macros">
+            <span class="macro-chip">${Math.round(e.calories)} kcal</span>
+            <span class="macro-chip" style="color:var(--protein)">${Math.round(e.protein)}g P</span>
+            <span class="macro-chip" style="color:var(--carbs)">${Math.round(e.carbs)}g C</span>
+            <span class="macro-chip" style="color:var(--fat)">${Math.round(e.fat)}g F</span>
+          </div>
+          <div class="meal-time">${e.time}</div>
         </div>
-        <div class="meal-time">${e.time}</div>
+        <div class="meal-actions">
+          <button class="meal-action-btn${alreadySaved ? ' saved' : ''}" onclick="saveMealFromLog(${i})" title="${alreadySaved ? 'Already saved' : 'Save meal'}">&#9673;</button>
+          <button class="meal-action-btn" onclick="openEditModal(${i})" title="Edit" style="font-size:12px">&#9998;</button>
+          <button class="meal-action-btn danger" onclick="deleteMeal(${i})" title="Delete">&#215;</button>
+        </div>
       </div>
-      <button class="meal-delete" onclick="openEditModal(${i})" style="font-size:12px;color:var(--text-muted)">✎</button>
-      <button class="meal-delete" onclick="deleteMeal(${i})">×</button>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 }
 
 function mealEmoji(e) {
   const d = (e.description || '').toLowerCase();
-  if (d.includes('coffee') || d.includes('tea')) return '☕';
-  if (d.includes('egg')) return '🥚';
-  if (d.includes('salad')) return '🥗';
-  if (d.includes('rice') || d.includes('pasta')) return '🍚';
-  if (d.includes('chicken')) return '🍗';
-  if (d.includes('fish') || d.includes('salmon')) return '🐟';
-  if (d.includes('shake') || d.includes('protein')) return '🥤';
-  if (d.includes('fruit') || d.includes('apple') || d.includes('banana')) return '🍎';
-  return '🍽';
+  if (d.includes('coffee') || d.includes('tea')) return '&#9749;';
+  if (d.includes('egg')) return '&#129370;';
+  if (d.includes('salad')) return '&#129367;';
+  if (d.includes('rice') || d.includes('pasta')) return '&#127834;';
+  if (d.includes('chicken')) return '&#127831;';
+  if (d.includes('fish') || d.includes('salmon')) return '&#128031;';
+  if (d.includes('shake') || d.includes('protein')) return '&#129380;';
+  if (d.includes('fruit') || d.includes('apple') || d.includes('banana')) return '&#127822;';
+  return '&#127869;';
 }
 
 function renderWeekBars() {
@@ -1199,10 +1291,139 @@ function renderBody() {
   `).join('');
 }
 
+function renderSaved() {
+  const meals = getSavedMeals();
+  const list = document.getElementById('saved-list');
+
+  if (!meals.length) {
+    list.innerHTML = '<div class="empty-state">No saved meals yet.<br>Tap the bookmark icon on any logged meal to save it.</div>';
+    return;
+  }
+
+  list.innerHTML = meals.map(m => `
+    <div class="saved-item">
+      ${m.photo
+        ? `<img class="meal-thumb" src="${m.photo}" alt="meal">`
+        : `<div class="meal-thumb-placeholder">${mealEmojiFromDesc(m.description)}</div>`
+      }
+      <div class="meal-info">
+        <div class="meal-desc">${escHtml(m.description)}</div>
+        <div class="meal-macros">
+          <span class="macro-chip">${Math.round(m.calories)} kcal</span>
+          <span class="macro-chip" style="color:var(--protein)">${Math.round(m.protein)}g P</span>
+          <span class="macro-chip" style="color:var(--carbs)">${Math.round(m.carbs)}g C</span>
+          <span class="macro-chip" style="color:var(--fat)">${Math.round(m.fat)}g F</span>
+        </div>
+      </div>
+      <div class="meal-actions">
+        <button class="saved-add-btn" onclick="addSavedToLog('${m.id}')" title="Add to today">+</button>
+        <button class="meal-action-btn" onclick="openEditSavedModal('${m.id}')" title="Edit" style="font-size:12px">&#9998;</button>
+        <button class="meal-action-btn danger" onclick="deleteSavedMeal('${m.id}')" title="Delete">&#215;</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function mealEmojiFromDesc(desc) {
+  return mealEmoji({ description: desc });
+}
+
 function checkApiKey() {
   const key = getApiKey();
   const banner = document.getElementById('api-banner');
   banner.classList.toggle('show', !key);
+}
+
+// ── saved meals logic ──────────────────────────────────────────────────────
+function saveMealFromLog(index) {
+  const entries = getLog(currentDate);
+  const e = entries[index];
+  const meals = getSavedMeals();
+
+  // prevent exact duplicates (same description + same calories)
+  const alreadySaved = meals.some(s => s.description === e.description && s.calories === e.calories);
+  if (alreadySaved) {
+    showToast('Already saved');
+    return;
+  }
+
+  meals.push({
+    id: Date.now().toString(),
+    description: e.description,
+    calories: e.calories || 0,
+    protein:  e.protein  || 0,
+    carbs:    e.carbs    || 0,
+    fat:      e.fat      || 0,
+    fiber:    e.fiber    || 0,
+    photo:    e.photo    || null
+  });
+
+  saveSavedMeals(meals);
+  renderMeals();   // re-render to update bookmark highlight
+  renderSaved();
+  showToast('Meal saved');
+}
+
+function addSavedToLog(id) {
+  const meals = getSavedMeals();
+  const m = meals.find(x => x.id === id);
+  if (!m) return;
+
+  const entries = getLog(currentDate);
+  const now = new Date();
+  const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+  entries.push({
+    description: m.description,
+    calories: m.calories,
+    protein:  m.protein,
+    carbs:    m.carbs,
+    fat:      m.fat,
+    fiber:    m.fiber,
+    photo:    m.photo || null,
+    comment:  '',
+    time:     time,
+    ts:       Date.now()
+  });
+
+  saveLog(currentDate, entries);
+  renderAll();
+  showToast('Added to ' + formatDateLabel(currentDate).toLowerCase());
+}
+
+function deleteSavedMeal(id) {
+  if (!confirm('Remove this saved meal?')) return;
+  const meals = getSavedMeals().filter(m => m.id !== id);
+  saveSavedMeals(meals);
+  renderSaved();
+  renderMeals();  // update bookmark highlights
+}
+
+function openEditSavedModal(id) {
+  const meals = getSavedMeals();
+  const m = meals.find(x => x.id === id);
+  if (!m) return;
+
+  editContext = { type: 'saved', id };
+
+  document.getElementById('e-description').value = m.description || '';
+  document.getElementById('e-calories').value    = m.calories    || 0;
+  document.getElementById('e-protein').value     = m.protein     || 0;
+  document.getElementById('e-carbs').value       = m.carbs       || 0;
+  document.getElementById('e-fat').value         = m.fat         || 0;
+  document.getElementById('e-fiber').value       = m.fiber       || 0;
+  document.getElementById('edit-modal').classList.add('open');
+}
+
+// ── toast ──────────────────────────────────────────────────────────────────
+let toastTimer = null;
+
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2000);
 }
 
 // ── meal modal ─────────────────────────────────────────────────────────────
@@ -1326,12 +1547,6 @@ All numeric values are plain numbers. Description is max 40 chars.`;
   }
 }
 
-function reanalyze() {
-  pendingMacros = null;
-  document.getElementById('result-preview').classList.remove('show');
-  document.getElementById('analyze-btn').disabled = false;
-}
-
 function logPendingMeal() {
   const comment = document.getElementById('meal-comment').value.trim();
   const entries = getLog(currentDate);
@@ -1351,39 +1566,51 @@ function logPendingMeal() {
   renderAll();
 }
 
-let editingIndex = null;
-
+// ── edit modal (shared for daily + saved meals) ────────────────────────────
 function openEditModal(index) {
-  editingIndex = index;
+  editContext = { type: 'daily', index };
+
   const entries = getLog(currentDate);
   const e = entries[index];
   document.getElementById('e-description').value = e.description || '';
-  document.getElementById('e-calories').value  = e.calories  || 0;
-  document.getElementById('e-protein').value   = e.protein   || 0;
-  document.getElementById('e-carbs').value     = e.carbs     || 0;
-  document.getElementById('e-fat').value       = e.fat       || 0;
-  document.getElementById('e-fiber').value     = e.fiber     || 0;
+  document.getElementById('e-calories').value    = e.calories    || 0;
+  document.getElementById('e-protein').value     = e.protein     || 0;
+  document.getElementById('e-carbs').value       = e.carbs       || 0;
+  document.getElementById('e-fat').value         = e.fat         || 0;
+  document.getElementById('e-fiber').value       = e.fiber       || 0;
   document.getElementById('edit-modal').classList.add('open');
 }
 
 function closeEditModal() {
   document.getElementById('edit-modal').classList.remove('open');
-  editingIndex = null;
+  editContext = null;
 }
 
 function saveEditedMeal() {
-  if (editingIndex === null) return;
-  const entries = getLog(currentDate);
-  entries[editingIndex] = {
-    ...entries[editingIndex],
+  if (!editContext) return;
+
+  const updated = {
     description: document.getElementById('e-description').value.trim(),
     calories: parseFloat(document.getElementById('e-calories').value) || 0,
     protein:  parseFloat(document.getElementById('e-protein').value)  || 0,
     carbs:    parseFloat(document.getElementById('e-carbs').value)    || 0,
     fat:      parseFloat(document.getElementById('e-fat').value)      || 0,
-    fiber:    parseFloat(document.getElementById('e-fiber').value)    || 0,
+    fiber:    parseFloat(document.getElementById('e-fiber').value)    || 0
   };
-  saveLog(currentDate, entries);
+
+  if (editContext.type === 'daily') {
+    const entries = getLog(currentDate);
+    entries[editContext.index] = { ...entries[editContext.index], ...updated };
+    saveLog(currentDate, entries);
+  } else if (editContext.type === 'saved') {
+    const meals = getSavedMeals();
+    const idx = meals.findIndex(m => m.id === editContext.id);
+    if (idx !== -1) {
+      meals[idx] = { ...meals[idx], ...updated };
+      saveSavedMeals(meals);
+    }
+  }
+
   closeEditModal();
   renderAll();
 }
@@ -1573,8 +1800,9 @@ function loadSettings() {
 
 // ── tabs ───────────────────────────────────────────────────────────────────
 function switchTab(name) {
+  const tabNames = ['log', 'saved', 'body', 'chat', 'settings'];
   document.querySelectorAll('.tab').forEach((t, i) => {
-    t.classList.toggle('active', ['log','body','chat','settings'][i] === name);
+    t.classList.toggle('active', tabNames[i] === name);
   });
   document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
@@ -1585,8 +1813,9 @@ function exportData() {
   const allKeys = Object.keys(localStorage).filter(k => k.startsWith('log_'));
   const out = {};
   allKeys.forEach(k => { out[k] = JSON.parse(localStorage.getItem(k)); });
-  out.body_log = getBodyLog();
-  out.targets  = getTargets();
+  out.body_log    = getBodyLog();
+  out.targets     = getTargets();
+  out.saved_meals = getSavedMeals();
 
   const blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
