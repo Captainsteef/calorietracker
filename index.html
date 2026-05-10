@@ -43,18 +43,8 @@ header {
 .date-nav button:hover { border-color: var(--accent); color: var(--accent); }
 #current-date { font-family: 'Playfair Display', serif; font-size: 13px; color: var(--text); font-style: italic; }
 
-/* ── week strip ── */
-.week-strip { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px 10px; background: var(--bg); }
-.day-pill { display: flex; flex-direction: column; align-items: center; gap: 5px; flex: 1; }
-.day-label { font-size: 10px; color: var(--text-muted); letter-spacing: 0.5px; }
-.day-num { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; color: #aaa; }
-.day-num.today { background: var(--accent); color: #111; font-weight: 500; }
-.day-num.over { background: var(--danger); color: #fff; }
-.day-num.logged { border: 1px solid var(--border2); color: var(--accent); }
-
 /* ── swipe cards ── */
-.card-section { transition: opacity 0.25s, max-height 0.3s cubic-bezier(0.4,0,0.2,1); overflow: hidden; max-height: 500px; opacity: 1; }
-.card-section.hidden { max-height: 0; opacity: 0; pointer-events: none; }
+.card-section { padding-bottom: 4px; }
 .card-vp { margin: 8px 14px 0; overflow: hidden; border-radius: 14px; }
 .card-track { display: flex; transition: transform 0.35s cubic-bezier(0.4,0,0.2,1); width: 200%; }
 .slide { width: 50%; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px 18px; flex-shrink: 0; box-sizing: border-box; }
@@ -114,22 +104,19 @@ header {
 .meal-kcal { font-size: 15px; font-weight: 500; color: var(--accent); margin-bottom: 6px; display: flex; align-items: center; gap: 4px; }
 .meal-macros { display: flex; gap: 5px; flex-wrap: wrap; }
 .macro-chip { font-size: 10px; padding: 3px 7px; border-radius: 3px; background: var(--surface2); border: 1px solid var(--border2); color: var(--text-mid); letter-spacing: 0.5px; }
-.meal-foot { display: flex; justify-content: flex-end; gap: 2px; margin-top: 10px; }
-.meal-action-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 18px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; border-radius: 6px; }
-.meal-action-btn:hover { color: var(--accent); background: var(--surface2); }
-.meal-action-btn.danger:hover { color: var(--danger); background: var(--surface2); }
-.meal-action-btn.saved { color: var(--accent); }
+.meal-foot { display: none; }
+.meal-action-btn { display: none; }
+.meal-item { cursor: pointer; }
+.meal-item:active { opacity: 0.75; }
 
 /* ── saved panel ── */
-.saved-item { margin: 8px 14px 0; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; display: flex; align-items: center; gap: 10px; animation: fadeUp 0.25s ease; }
+.saved-item { margin: 8px 14px 0; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; display: flex; align-items: center; gap: 10px; animation: fadeUp 0.25s ease; cursor: pointer; }
+.saved-item:active { opacity: 0.75; }
 .saved-thumb { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; flex-shrink: 0; background: var(--surface2); filter: sepia(20%) brightness(0.9); }
 .saved-thumb-placeholder { width: 44px; height: 44px; border-radius: 8px; background: var(--surface2); border: 1px solid var(--border2); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 18px; }
 .saved-info { flex: 1; min-width: 0; }
 .saved-name { font-size: 14px; color: var(--accent); font-family: 'Playfair Display', serif; font-style: italic; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .saved-chips { display: flex; gap: 5px; flex-wrap: wrap; }
-.saved-actions { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
-.saved-add-btn { width: 32px; height: 32px; border-radius: 8px; background: none; border: 1px solid var(--border2); color: var(--accent); font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-family: 'Inconsolata', monospace; transition: background 0.15s; }
-.saved-add-btn:hover { background: var(--surface2); }
 
 /* ── chat panel ── */
 #panel-chat { overflow: hidden; padding-bottom: 0; }
@@ -230,9 +217,9 @@ header {
     </div>
   </header>
 
-  <div class="week-strip" id="week-strip"></div>
-
-  <div class="card-section" id="card-section">
+  <!-- HOME -->
+  <div class="panel active" id="panel-home">
+    <div class="card-section" id="card-section">
     <div class="card-vp">
       <div class="card-track" id="track">
 
@@ -301,10 +288,7 @@ header {
       <div class="dot active" id="dot0" onclick="goTo(0)"></div>
       <div class="dot" id="dot1" onclick="goTo(1)"></div>
     </div>
-  </div>
-
-  <!-- HOME -->
-  <div class="panel active" id="panel-home">
+    </div><!-- end card-section -->
     <div class="api-banner" id="api-banner">No API key set. Go to Profile &#8594; Settings to add your Anthropic key.</div>
     <button class="log-btn" onclick="openLogModal()"><span style="font-size:16px;font-weight:300">+</span> Log meal</button>
     <div class="sec-label">Meals</div>
@@ -444,10 +428,7 @@ header {
       <div class="field"><label>Fat (g)</label><input type="number" id="e-fat"></div>
       <div class="field"><label>Fiber (g)</label><input type="number" id="e-fiber"></div>
     </div>
-    <div class="btn-row">
-      <button class="btn-secondary" onclick="closeEditModal()">Cancel</button>
-      <button class="btn-primary" onclick="saveEditedMeal()">Save</button>
-    </div>
+    <div class="btn-row" id="edit-btn-row"></div>
   </div>
 </div>
 
@@ -524,7 +505,6 @@ function switchPanel(name) {
     document.getElementById('panel-' + n).classList.toggle('active', n === name);
     document.getElementById('nav-' + n).classList.toggle('active', n === name);
   });
-  document.getElementById('card-section').classList.toggle('hidden', name !== 'home');
 }
 
 // ── swipe ──────────────────────────────────────────────────────────────────
@@ -538,31 +518,12 @@ function goTo(i) {
 // ── render ─────────────────────────────────────────────────────────────────
 function renderAll() {
   document.getElementById('current-date').textContent = formatDateLabel(currentDate);
-  renderWeekStrip();
   renderSummary();
   renderWeekBars();
   renderMeals();
   renderBody();
   renderSaved();
   checkApiKey();
-}
-
-function renderWeekStrip() {
-  const strip = document.getElementById('week-strip');
-  const realToday = todayKey();
-  const targets = getTargets();
-  const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  strip.innerHTML = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(); d.setDate(d.getDate() - 3 + i);
-    const key = d.toISOString().split('T')[0];
-    const isToday = key === realToday;
-    const entries = getLog(key);
-    const total = entries.reduce((s, e) => s + (e.calories || 0), 0);
-    const hasLog = entries.length > 0;
-    const isOver = hasLog && total > targets.calories;
-    const cls = isToday ? 'today' : isOver ? 'over' : hasLog ? 'logged' : '';
-    return `<div class="day-pill"><span class="day-label">${dayNames[d.getDay()]}</span><div class="day-num ${cls}">${d.getDate()}</div></div>`;
-  }).join('');
 }
 
 function renderSummary() {
@@ -630,16 +591,13 @@ function renderWeekBars() {
 
 function renderMeals() {
   const entries = getLog(currentDate);
-  const savedMeals = getSavedMeals();
   const list = document.getElementById('meals-list');
   if (!entries.length) {
     list.innerHTML = '<div class="empty-state">Nothing logged yet.<br>Tap log meal to add your first entry.</div>';
     return;
   }
-  list.innerHTML = entries.map((e, i) => {
-    const alreadySaved = savedMeals.some(s => s.description === e.description && s.calories === e.calories);
-    return `
-    <div class="meal-item">
+  list.innerHTML = entries.map((e, i) => `
+    <div class="meal-item" onclick="openEditModal(${i})">
       <div class="meal-body">
         ${e.photo
           ? `<img class="meal-thumb" src="${e.photo}" alt="">`
@@ -657,13 +615,7 @@ function renderMeals() {
           </div>
         </div>
       </div>
-      <div class="meal-foot">
-        <button class="meal-action-btn${alreadySaved ? ' saved' : ''}" onclick="saveMealFromLog(${i})" title="${alreadySaved ? 'Already saved' : 'Save meal'}"><i class="ti ti-bookmark"></i></button>
-        <button class="meal-action-btn" onclick="openEditModal(${i})" title="Edit"><i class="ti ti-pencil"></i></button>
-        <button class="meal-action-btn danger" onclick="deleteMeal(${i})" title="Delete"><i class="ti ti-x"></i></button>
-      </div>
-    </div>`;
-  }).join('');
+    </div>`).join('');
 }
 
 function renderBody() {
@@ -698,7 +650,7 @@ function renderSaved() {
   const list = document.getElementById('saved-list');
   if (!meals.length) { list.innerHTML = '<div class="empty-state">No saved meals yet.<br>Tap the bookmark icon on any meal to save it.</div>'; return; }
   list.innerHTML = meals.map(m => `
-    <div class="saved-item">
+    <div class="saved-item" onclick="openEditSavedModal('${m.id}')">
       ${m.photo
         ? `<img class="saved-thumb" src="${m.photo}" alt="">`
         : `<div class="saved-thumb-placeholder">${mealEmoji({ description: m.description })}</div>`}
@@ -710,11 +662,6 @@ function renderSaved() {
           <span class="macro-chip" style="color:var(--carbs)">${Math.round(m.carbs)}g C</span>
           <span class="macro-chip" style="color:var(--fat)">${Math.round(m.fat)}g F</span>
         </div>
-      </div>
-      <div class="saved-actions">
-        <button class="saved-add-btn" onclick="addSavedToLog('${m.id}')" title="Add to today">+</button>
-        <button class="meal-action-btn" onclick="openEditSavedModal('${m.id}')" title="Edit"><i class="ti ti-pencil"></i></button>
-        <button class="meal-action-btn danger" onclick="deleteSavedMeal('${m.id}')" title="Delete"><i class="ti ti-x"></i></button>
       </div>
     </div>`).join('');
 }
@@ -870,7 +817,65 @@ function openEditModal(index) {
   document.getElementById('e-carbs').value       = e.carbs       || 0;
   document.getElementById('e-fat').value         = e.fat         || 0;
   document.getElementById('e-fiber').value       = e.fiber       || 0;
+  document.getElementById('edit-btn-row').innerHTML = `
+    <button class="btn-secondary" onclick="closeEditModal()">Cancel</button>
+    <button class="btn-secondary" style="color:var(--danger);border-color:var(--danger)" onclick="deleteMealFromEdit()">Delete</button>
+    <button class="btn-secondary" onclick="saveMealFromEdit()"><i class="ti ti-bookmark" style="font-size:14px"></i> Save</button>
+    <button class="btn-primary" onclick="saveEditedMeal()">Done</button>
+  `;
   document.getElementById('edit-modal').classList.add('open');
+}
+
+function openEditSavedModal(id) {
+  const m = getSavedMeals().find(x => x.id === id);
+  if (!m) return;
+  editContext = { type: 'saved', id };
+  document.getElementById('e-description').value = m.description || '';
+  document.getElementById('e-calories').value    = m.calories    || 0;
+  document.getElementById('e-protein').value     = m.protein     || 0;
+  document.getElementById('e-carbs').value       = m.carbs       || 0;
+  document.getElementById('e-fat').value         = m.fat         || 0;
+  document.getElementById('e-fiber').value       = m.fiber       || 0;
+  document.getElementById('edit-btn-row').innerHTML = `
+    <button class="btn-secondary" onclick="closeEditModal()">Cancel</button>
+    <button class="btn-secondary" style="color:var(--danger);border-color:var(--danger)" onclick="deleteSavedFromEdit()">Delete</button>
+    <button class="btn-secondary" onclick="addSavedToLogFromEdit()">+ Today</button>
+    <button class="btn-primary" onclick="saveEditedMeal()">Done</button>
+  `;
+  document.getElementById('edit-modal').classList.add('open');
+}
+
+function deleteMealFromEdit() {
+  if (!editContext || editContext.type !== 'daily') return;
+  if (!confirm('Delete this meal?')) return;
+  const entries = getLog(currentDate);
+  entries.splice(editContext.index, 1);
+  saveLog(currentDate, entries);
+  closeEditModal(); renderAll();
+}
+
+function deleteSavedFromEdit() {
+  if (!editContext || editContext.type !== 'saved') return;
+  if (!confirm('Remove this saved meal?')) return;
+  saveSavedMeals(getSavedMeals().filter(m => m.id !== editContext.id));
+  closeEditModal(); renderSaved();
+}
+
+function saveMealFromEdit() {
+  if (!editContext || editContext.type !== 'daily') return;
+  const entries = getLog(currentDate);
+  const e = entries[editContext.index];
+  const meals = getSavedMeals();
+  if (meals.some(s => s.description === e.description && s.calories === e.calories)) { showToast('Already saved'); return; }
+  meals.push({ id: Date.now().toString(), description: e.description, calories: e.calories||0, protein: e.protein||0, carbs: e.carbs||0, fat: e.fat||0, fiber: e.fiber||0, photo: e.photo||null });
+  saveSavedMeals(meals);
+  showToast('Meal saved');
+}
+
+function addSavedToLogFromEdit() {
+  if (!editContext || editContext.type !== 'saved') return;
+  addSavedToLog(editContext.id);
+  closeEditModal();
 }
 
 function closeEditModal() { document.getElementById('edit-modal').classList.remove('open'); editContext = null; }
