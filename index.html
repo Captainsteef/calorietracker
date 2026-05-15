@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Inconsolata:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>
 <style>
 :root {
   --bg: #111111; --surface: #1a1a1a; --surface2: #222222;
@@ -204,7 +205,9 @@ header {
 }
 .barcode-btn:hover { border-color: var(--accent-dim); color: var(--accent); }
 .barcode-btn:active { opacity: 0.75; }
-#barcode-video { width: 100%; border-radius: 10px; background: #000; display: block; max-height: 240px; object-fit: cover; }
+#barcode-scanner-container { width: 100%; border-radius: 10px; overflow: hidden; background: #000; min-height: 200px; position: relative; }
+#barcode-scanner-container video { width: 100% !important; height: auto !important; display: block; border-radius: 10px; }
+#barcode-scanner-container canvas.drawingBuffer { display: none; }
 .barcode-status { font-size: 11px; color: var(--text-muted); text-align: center; margin-top: 10px; letter-spacing: 0.5px; min-height: 18px; }
 .barcode-result { margin-top: 12px; background: var(--surface2); border: 1px solid var(--border2); border-radius: 8px; padding: 12px; display: none; animation: fadeUp 0.2s ease; }
 .barcode-result.show { display: block; }
@@ -449,7 +452,7 @@ header {
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-title">Scan barcode</div>
-    <video id="barcode-video" autoplay playsinline muted></video>
+    <div id="barcode-scanner-container"></div>
     <div class="barcode-status" id="barcode-status"></div>
     <div class="barcode-result" id="barcode-result">
       <div class="barcode-product-name" id="barcode-product-name"></div>
@@ -843,68 +846,55 @@ function deleteMeal(index) {
 }
 
 // ── barcode scanner ────────────────────────────────────────────────────────
-let barcodeStream = null;
-let barcodeDetector = null;
-let barcodeInterval = null;
+let quaggaRunning = false;
 let pendingBarcodeProduct = null;
 
-async function openBarcodeScanner() {
-  // Close log modal, open barcode modal
+function openBarcodeScanner() {
   document.getElementById('log-modal').classList.remove('open');
   document.getElementById('barcode-modal').classList.add('open');
   document.getElementById('barcode-status').textContent = 'Starting camera...';
   document.getElementById('barcode-result').classList.remove('show');
   document.getElementById('barcode-add-btn').style.display = 'none';
+  document.getElementById('barcode-scanner-container').innerHTML = '';
   pendingBarcodeProduct = null;
 
-  // iOS Safari fallback: BarcodeDetector not supported
-  if (!('BarcodeDetector' in window)) {
-    document.getElementById('barcode-status').textContent = 'Camera scan not supported. Enter barcode number:';
-    const code = prompt('Enter barcode number:');
-    if (code && code.trim()) {
-      await lookupBarcode(code.trim());
-    } else {
-      closeBarcodeScanner();
-      document.getElementById('log-modal').classList.add('open');
+  Quagga.init({
+    inputStream: {
+      name: 'Live',
+      type: 'LiveStream',
+      target: document.getElementById('barcode-scanner-container'),
+      constraints: { facingMode: 'environment' }
+    },
+    locator: { patchSize: 'medium', halfSample: true },
+    numOfWorkers: 0,
+    frequency: 10,
+    decoder: {
+      readers: ['ean_reader', 'ean_8_reader', 'upc_reader', 'upc_e_reader', 'code_128_reader']
+    },
+    locate: true
+  }, function(err) {
+    if (err) {
+      document.getElementById('barcode-status').textContent = 'Camera error: ' + err.message;
+      return;
     }
-    return;
-  }
-
-  try {
-    barcodeStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'environment', width: { ideal: 1280 } }
-    });
-    const video = document.getElementById('barcode-video');
-    video.srcObject = barcodeStream;
-
-    barcodeDetector = new BarcodeDetector({
-      formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39']
-    });
-
+    quaggaRunning = true;
+    Quagga.start();
     document.getElementById('barcode-status').textContent = 'Point at barcode...';
+  });
 
-    barcodeInterval = setInterval(async () => {
-      if (!barcodeStream) return;
-      try {
-        const codes = await barcodeDetector.detect(video);
-        if (codes.length > 0) {
-          clearInterval(barcodeInterval);
-          barcodeInterval = null;
-          stopBarcodeCamera();
-          await lookupBarcode(codes[0].rawValue);
-        }
-      } catch (_) { /* frame not ready */ }
-    }, 400);
-
-  } catch (err) {
-    document.getElementById('barcode-status').textContent = 'Camera access denied.';
-  }
+  Quagga.onDetected(function(result) {
+    const code = result.codeResult.code;
+    if (!code) return;
+    stopBarcodeCamera();
+    document.getElementById('barcode-status').textContent = 'Found: ' + code;
+    lookupBarcode(code);
+  });
 }
 
 async function lookupBarcode(barcode) {
   document.getElementById('barcode-status').textContent = 'Looking up product...';
   try {
-    const res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${barcode}.json`);
+    const res = await fetch('https://world.openfoodfacts.org/api/v0/product/' + barcode + '.json');
     const data = await res.json();
 
     if (data.status !== 1 || !data.product) {
@@ -915,7 +905,6 @@ async function lookupBarcode(barcode) {
     const p = data.product;
     const n = p.nutriments || {};
 
-    // Use serving size if available, otherwise per 100g
     const rawServing = p.serving_size ? parseFloat(p.serving_size) : NaN;
     const servingG = isNaN(rawServing) || rawServing <= 0 ? 100 : rawServing;
     const factor = servingG / 100;
@@ -969,15 +958,16 @@ function addBarcodeResult() {
 }
 
 function stopBarcodeCamera() {
-  if (barcodeInterval) { clearInterval(barcodeInterval); barcodeInterval = null; }
-  if (barcodeStream) { barcodeStream.getTracks().forEach(t => t.stop()); barcodeStream = null; }
-  const video = document.getElementById('barcode-video');
-  if (video) video.srcObject = null;
+  if (quaggaRunning) {
+    try { Quagga.stop(); } catch (_) {}
+    quaggaRunning = false;
+  }
 }
 
 function closeBarcodeScanner() {
   stopBarcodeCamera();
   document.getElementById('barcode-modal').classList.remove('open');
+  document.getElementById('barcode-scanner-container').innerHTML = '';
   pendingBarcodeProduct = null;
 }
 
