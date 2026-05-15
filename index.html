@@ -863,13 +863,14 @@ function openBarcodeScanner() {
       name: 'Live',
       type: 'LiveStream',
       target: document.getElementById('barcode-scanner-container'),
-      constraints: { facingMode: 'environment' }
+      constraints: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
     },
-    locator: { patchSize: 'medium', halfSample: true },
+    locator: { patchSize: 'large', halfSample: false },
     numOfWorkers: 0,
-    frequency: 10,
+    frequency: 15,
     decoder: {
-      readers: ['ean_reader', 'ean_8_reader', 'upc_reader', 'upc_e_reader', 'code_128_reader']
+      readers: ['ean_reader', 'ean_8_reader', 'upc_reader', 'upc_e_reader', 'code_128_reader'],
+      multiple: false
     },
     locate: true
   }, function(err) {
@@ -885,6 +886,12 @@ function openBarcodeScanner() {
   Quagga.onDetected(function(result) {
     const code = result.codeResult.code;
     if (!code) return;
+    // Require consistent detection: ignore low-confidence reads
+    const errors = result.codeResult.decodedCodes
+      .filter(x => x.error !== undefined)
+      .map(x => x.error);
+    const avgError = errors.reduce((a, b) => a + b, 0) / (errors.length || 1);
+    if (avgError > 0.25) return;
     stopBarcodeCamera();
     document.getElementById('barcode-status').textContent = 'Found: ' + code;
     lookupBarcode(code);
@@ -892,52 +899,79 @@ function openBarcodeScanner() {
 }
 
 async function lookupBarcode(barcode) {
-  document.getElementById('barcode-status').textContent = 'Looking up product...';
+  document.getElementById('barcode-status').textContent = 'Zoeken in AH database...';
+
+  // ── 1. Try Albert Heijn API (via Netlify proxy) ──────────────────────────
   try {
-    const res = await fetch('https://world.openfoodfacts.org/api/v0/product/' + barcode + '.json');
-    const data = await res.json();
-
-    if (data.status !== 1 || !data.product) {
-      document.getElementById('barcode-status').textContent = 'Product not found in database.';
-      return;
+    const ahRes = await fetch('/api/ah-barcode?barcode=' + encodeURIComponent(barcode));
+    if (ahRes.ok) {
+      const ah = await ahRes.json();
+      if (ah.name && (ah.calories || ah.protein || ah.carbs || ah.fat)) {
+        const servingLabel = ah.servingSize ? 'Per ' + ah.servingSize : 'Per 100g';
+        showBarcodeProduct(ah.name, servingLabel, {
+          calories: Math.round(ah.calories || 0),
+          protein:  Math.round((ah.protein  || 0) * 10) / 10,
+          carbs:    Math.round((ah.carbs    || 0) * 10) / 10,
+          fat:      Math.round((ah.fat      || 0) * 10) / 10,
+          fiber:    Math.round((ah.fiber    || 0) * 10) / 10,
+        }, 'AH');
+        return;
+      }
     }
+  } catch (_) { /* AH unavailable, continue to next source */ }
 
-    const p = data.product;
-    const n = p.nutriments || {};
+  // ── 2. Try Open Food Facts ───────────────────────────────────────────────
+  document.getElementById('barcode-status').textContent = 'Zoeken in Open Food Facts...';
+  try {
+    const offRes = await fetch('https://world.openfoodfacts.org/api/v0/product/' + barcode + '.json');
+    if (offRes.ok) {
+      const offData = await offRes.json();
+      if (offData.status === 1 && offData.product) {
+        const p = offData.product;
+        const n = p.nutriments || {};
+        const rawServing = p.serving_size ? parseFloat(p.serving_size) : NaN;
+        const servingG   = isNaN(rawServing) || rawServing <= 0 ? 100 : rawServing;
+        const factor     = servingG / 100;
+        const kcal100    = n['energy-kcal_100g'] || (n['energy_100g'] ? n['energy_100g'] / 4.184 : 0);
+        const name       = p.product_name_nl || p.product_name || 'Onbekend product';
+        const servingLabel = isNaN(rawServing) || rawServing <= 0
+          ? 'Per 100g'
+          : 'Per portie (' + p.serving_size + ')';
+        showBarcodeProduct(name, servingLabel, {
+          calories: Math.round(kcal100 * factor),
+          protein:  Math.round((n['proteins_100g']     || 0) * factor * 10) / 10,
+          carbs:    Math.round((n['carbohydrates_100g'] || 0) * factor * 10) / 10,
+          fat:      Math.round((n['fat_100g']           || 0) * factor * 10) / 10,
+          fiber:    Math.round((n['fiber_100g']         || 0) * factor * 10) / 10,
+        }, 'OFF');
+        return;
+      }
+    }
+  } catch (_) { /* Open Food Facts unavailable */ }
 
-    const rawServing = p.serving_size ? parseFloat(p.serving_size) : NaN;
-    const servingG = isNaN(rawServing) || rawServing <= 0 ? 100 : rawServing;
-    const factor = servingG / 100;
-    const kcalPer100 = n['energy-kcal_100g'] || (n['energy_100g'] ? n['energy_100g'] / 4.184 : 0);
+  // ── 3. Not found anywhere — show Claude fallback ─────────────────────────
+  document.getElementById('barcode-status').textContent = 'Niet gevonden. Beschrijf het product:';
+  showBarcodeManualFallback();
+}
 
-    pendingBarcodeProduct = {
-      description: (p.product_name_nl || p.product_name || 'Unknown product').slice(0, 60),
-      calories: Math.round(kcalPer100 * factor),
-      protein:  Math.round((n['proteins_100g']      || 0) * factor * 10) / 10,
-      carbs:    Math.round((n['carbohydrates_100g']  || 0) * factor * 10) / 10,
-      fat:      Math.round((n['fat_100g']            || 0) * factor * 10) / 10,
-      fiber:    Math.round((n['fiber_100g']          || 0) * factor * 10) / 10,
-    };
+function showBarcodeProduct(name, servingLabel, macros, source) {
+  pendingBarcodeProduct = { description: name.slice(0, 60), ...macros };
 
-    const servingLabel = isNaN(rawServing) || rawServing <= 0
-      ? 'Per 100g'
-      : 'Per serving (' + p.serving_size + ')';
+  const sourceTag = source === 'AH'
+    ? '<span style="font-size:9px;color:var(--warn);letter-spacing:1px;margin-left:6px">AH</span>'
+    : '';
 
-    document.getElementById('barcode-product-name').textContent = pendingBarcodeProduct.description;
-    document.getElementById('barcode-serving').textContent = servingLabel;
-    document.getElementById('barcode-chips').innerHTML =
-      '<span class="macro-chip">' + pendingBarcodeProduct.calories + ' kcal</span>' +
-      '<span class="macro-chip" style="color:var(--protein)">' + pendingBarcodeProduct.protein + 'g P</span>' +
-      '<span class="macro-chip" style="color:var(--carbs)">' + pendingBarcodeProduct.carbs + 'g C</span>' +
-      '<span class="macro-chip" style="color:var(--fat)">' + pendingBarcodeProduct.fat + 'g F</span>';
+  document.getElementById('barcode-product-name').innerHTML = escHtml(name) + sourceTag;
+  document.getElementById('barcode-serving').textContent = servingLabel;
+  document.getElementById('barcode-chips').innerHTML =
+    '<span class="macro-chip">' + macros.calories + ' kcal</span>' +
+    '<span class="macro-chip" style="color:var(--protein)">' + macros.protein + 'g P</span>' +
+    '<span class="macro-chip" style="color:var(--carbs)">'   + macros.carbs   + 'g C</span>' +
+    '<span class="macro-chip" style="color:var(--fat)">'     + macros.fat     + 'g F</span>';
 
-    document.getElementById('barcode-result').classList.add('show');
-    document.getElementById('barcode-add-btn').style.display = '';
-    document.getElementById('barcode-status').textContent = '\u2713 Found';
-
-  } catch (err) {
-    document.getElementById('barcode-status').textContent = 'Error: ' + err.message;
-  }
+  document.getElementById('barcode-result').classList.add('show');
+  document.getElementById('barcode-add-btn').style.display = '';
+  document.getElementById('barcode-status').textContent = '\u2713 Gevonden';
 }
 
 function addBarcodeResult() {
@@ -961,6 +995,62 @@ function stopBarcodeCamera() {
   if (quaggaRunning) {
     try { Quagga.stop(); } catch (_) {}
     quaggaRunning = false;
+  }
+}
+
+function showBarcodeManualFallback() {
+  // Show a text input + Claude estimate button inside the barcode modal
+  const result = document.getElementById('barcode-result');
+  result.classList.add('show');
+  result.innerHTML = `
+    <div style="font-size:10px;color:var(--text-muted);letter-spacing:1px;margin-bottom:8px">PRODUCT NOT IN DATABASE</div>
+    <input type="text" id="barcode-manual-name" placeholder='e.g. "AH hazelnootpasta 400g"'
+      style="width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:8px;
+             color:var(--accent);font-family:'Inconsolata',monospace;font-size:14px;padding:10px 12px;
+             outline:none;margin-bottom:8px">
+    <button onclick="estimateBarcodeWithClaude()"
+      style="width:100%;padding:12px;background:none;border:1px solid var(--accent-dim);
+             color:var(--accent);border-radius:8px;font-family:'Inconsolata',monospace;
+             font-size:11px;letter-spacing:2px;text-transform:uppercase;cursor:pointer">
+      Estimate with AI
+    </button>
+  `;
+}
+
+async function estimateBarcodeWithClaude() {
+  const name = document.getElementById('barcode-manual-name').value.trim();
+  if (!name) return;
+  if (!getApiKey()) { alert('Add your Anthropic API key in Profile \u2192 Settings first.'); return; }
+  document.getElementById('barcode-status').textContent = 'Estimating macros...';
+  try {
+    const data = await callClaude({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 200,
+      messages: [{
+        role: 'user',
+        content: 'Estimate macros for this packaged product. Respond ONLY with a raw JSON object, no markdown.\nProduct: ' + name + '\nFormat: {"description":"short name","calories":200,"protein":5,"carbs":30,"fat":8,"fiber":2}\nBase values on a typical single serving or 100g if unclear.'
+      }]
+    });
+    const raw = data.content[0].text;
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('No JSON');
+    pendingBarcodeProduct = JSON.parse(match[0]);
+
+    document.getElementById('barcode-result').innerHTML =
+      '<div style="font-size:10px;color:var(--warn);letter-spacing:1px;margin-bottom:6px">AI ESTIMATE — verify if possible</div>' +
+      '<div class="barcode-product-name">' + escHtml(pendingBarcodeProduct.description) + '</div>' +
+      '<div class="barcode-serving">Estimated per serving</div>' +
+      '<div class="meal-macros">' +
+        '<span class="macro-chip">' + pendingBarcodeProduct.calories + ' kcal</span>' +
+        '<span class="macro-chip" style="color:var(--protein)">' + pendingBarcodeProduct.protein + 'g P</span>' +
+        '<span class="macro-chip" style="color:var(--carbs)">' + pendingBarcodeProduct.carbs + 'g C</span>' +
+        '<span class="macro-chip" style="color:var(--fat)">' + pendingBarcodeProduct.fat + 'g F</span>' +
+      '</div>';
+
+    document.getElementById('barcode-add-btn').style.display = '';
+    document.getElementById('barcode-status').textContent = '\u2713 Estimated';
+  } catch (err) {
+    document.getElementById('barcode-status').textContent = 'Error: ' + err.message;
   }
 }
 
