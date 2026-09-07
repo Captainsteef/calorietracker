@@ -813,7 +813,7 @@ async function analyzeMeal() {
   if (photoBase64) userContent.push({ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: photoBase64 } });
   userContent.push({ type: 'text', text: `You are a nutrition expert. Estimate macros for this meal.\n${comment ? 'Meal description: ' + comment : ''}\nYou MUST respond with ONLY a raw JSON object. No markdown. No backticks. No explanation.\nFormat: {"description":"short name","calories":450,"protein":22,"carbs":55,"fat":10,"fiber":8}\nAll numeric values are plain numbers. Description is max 40 chars.` });
   try {
-    const data = await callClaude({ model: 'claude-sonnet-4-20250514', max_tokens: 300, messages: [{ role: 'user', content: userContent }] });
+    const data = await callClaude({ model: 'claude-sonnet-5', max_tokens: 300, messages: [{ role: 'user', content: userContent }] });
     if (!data.content || !data.content[0]) throw new Error('API error: ' + JSON.stringify(data.error || data));
     const raw = data.content[0].text;
     const jsonMatch = raw.match(/\{[\s\S]*\}/);
@@ -1024,7 +1024,7 @@ async function estimateBarcodeWithClaude() {
   document.getElementById('barcode-status').textContent = 'Estimating macros...';
   try {
     const data = await callClaude({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-5',
       max_tokens: 200,
       messages: [{
         role: 'user',
@@ -1216,7 +1216,7 @@ async function sendChat() {
   const typingEl = addChatMsg('assistant', '...', true);
   try {
     const data = await callClaude({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-5',
       max_tokens: 500,
       system: `You are a concise nutrition and fitness assistant. The user is on a cut.\n${buildDataContext()}\nAnswer based on their actual data. Be direct and specific. Keep responses short.`,
       messages: chatHistory
